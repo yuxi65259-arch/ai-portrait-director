@@ -37,13 +37,13 @@ def parse_response(text: str) -> dict:
     if m:
         result["sub_style"] = m.group(1).strip()
 
-    # 提取六大结构化字段（使用精确的 emoji+标签）
-    result["scene"] = extract_section(r"📷 场景")
-    result["action"] = extract_section(r"💃 动作/姿态")
-    result["expression"] = extract_section(r"😊 表情/情绪")
-    result["lighting"] = extract_section(r"💡 光线方案")
-    result["tone"] = extract_section(r"🎨 色调/影调")
-    result["composition"] = extract_section(r"📐 构图建议")
+    # 提取六大结构化字段（兼容格式变异）
+    result["scene"] = extract_section(r"📷\s*场景")
+    result["action"] = extract_section(r"💃\s*动作\s*/\s*姿态")
+    result["expression"] = extract_section(r"😊\s*表情\s*/\s*情绪")
+    result["lighting"] = extract_section(r"💡\s*光线方案")
+    result["tone"] = extract_section(r"🎨\s*色调\s*/\s*影调")
+    result["composition"] = extract_section(r"📐\s*构图建议")
 
     # 提取中文视觉方案
     m = re.search(r"🌐.*?中文视觉方案.*?\n(.+?)(?:\n🌍|\nEnglish|\n━━|$)", text, re.DOTALL)

@@ -32,7 +32,10 @@ class PromptResponse(BaseModel):
 # ── 图片生成 ──
 class ImageRequest(BaseModel):
     prompt: str = Field(min_length=1, max_length=4000)
-    size: SIZE_OPTIONS = "1792x1024"
+    size: SIZE_OPTIONS = "1024x1024"
+    model: Optional[str] = "gemini-2.5-flash-image"
+    image: Optional[str] = None  # base64 reference image
+    n: int = 1
 
 
 class ImageResponse(BaseModel):

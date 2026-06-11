@@ -103,10 +103,45 @@ async def api_generate_prompt(request: PromptRequest):
         )
 
 
-# ── 步骤2：生图（支持 FormData + JSON 两种模式）──
+# ── 步骤2a：生图 JSON 接口 ──
 @app.post("/api/generate-image", response_model=ImageResponse)
-async def api_generate_image(
-    prompt: str = Form(None),
+async def api_generate_image_json(request: ImageRequest):
+    try:
+        if not OPENAI_API_KEY:
+            return JSONResponse(status_code=503, content=ErrorResponse(
+                error="OpenAI Key 未配置",
+                detail="缺少 OPENAI_API_KEY，请在 .env 文件中填入密钥后重启服务",
+                code="API_KEY_MISSING",
+            ).model_dump())
+
+        ref_bytes = None
+        if request.image:
+            import base64
+            b64 = request.image
+            if "," in b64:
+                b64 = b64.split(",", 1)[1]
+            ref_bytes = base64.b64decode(b64)
+
+        img = generate_image(prompt=request.prompt, size=request.size, model=request.model, reference_image_bytes=ref_bytes)
+        return ImageResponse(image_url=img["url"], revised_prompt=img.get("revised_prompt", ""))
+
+    except Exception as e:
+        msg = repr(e)
+        detail = str(e)[:500]
+        code = "OPENAI_ERROR"
+        if "content_policy_violation" in msg.lower() or "safety" in msg.lower():
+            code = "SAFETY_REJECT"
+            detail = "提示词被内容安全策略拒绝，请换一种描述方式重试"
+        elif "timeout" in msg.lower():
+            code = "TIMEOUT"
+            detail = "请求超时，请检查网络后重试"
+        return JSONResponse(status_code=500, content=ErrorResponse(error="图片生成失败", detail=detail, code=code).model_dump())
+
+
+# ── 步骤2b：生图 FormData 接口（兼容旧版 + 参考图上传）──
+@app.post("/api/generate-image-form", response_model=ImageResponse)
+async def api_generate_image_form(
+    prompt: str = Form(...),
     size: str = Form("1024x1024"),
     model: str = Form(DEFAULT_IMAGE_MODEL),
     reference_image: UploadFile = File(None),
@@ -120,26 +155,10 @@ async def api_generate_image(
             ).model_dump())
 
         ref_bytes = None
-        # FormData mode
-        if prompt is not None:
-            if reference_image and reference_image.filename:
-                ref_bytes = await reference_image.read()
-        else:
-            # JSON mode
-            import json
-            body = await request.json()
-            prompt = body.get("prompt", "")
-            size = body.get("size", "1024x1024")
-            model = body.get("model", DEFAULT_IMAGE_MODEL)
-            ref_b64 = body.get("image")
-            if ref_b64:
-                import base64
-                # Remove data:image/...;base64, prefix if present
-                if "," in ref_b64:
-                    ref_b64 = ref_b64.split(",", 1)[1]
-                ref_bytes = base64.b64decode(ref_b64)
+        if reference_image and reference_image.filename:
+            ref_bytes = await reference_image.read()
 
-        img = generate_image(prompt=prompt, size=size, reference_image_bytes=ref_bytes, model=model)
+        img = generate_image(prompt=prompt, size=size, model=model, reference_image_bytes=ref_bytes)
 
         return ImageResponse(
             image_url=img["url"],

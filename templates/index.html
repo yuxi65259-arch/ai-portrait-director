@@ -85,6 +85,18 @@ body {
   padding: 0 20px 80px;
 }
 
+
+.history-fab { top: 72px !important; }
+.history-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; cursor: pointer;
+  transition: all 0.2s; font-size: 12px; color: var(--text2);
+}
+.history-item:hover { border-color: var(--primary); }
+.history-item .hi-time { font-size: 10px; color: var(--text2); opacity: 0.6; margin-bottom: 4px; }
+.history-item .hi-info { font-weight: 600; color: var(--primary2); }
+.history-item .hi-preview { font-size: 11px; color: var(--text2); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* Settings */
 .settings-fab {
   position: fixed;
@@ -500,8 +512,22 @@ body {
 </head>
 <body>
 
+<!-- History -->
+
+<div class="settings-panel" id="historyPanel" style="width:420px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h3 style="font-size:15px">📜 历史记录</h3>
+    <button class="btn-ghost" onclick="clearHistory()" style="font-size:11px;padding:4px 8px">清空</button>
+  </div>
+  <div id="historyList" style="max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:8px">
+    <div style="color:var(--text2);font-size:12px;text-align:center;padding:20px">暂无记录，生成提示词后自动保存</div>
+  </div>
+</div>
+
+
 <!-- Settings -->
 <button class="settings-fab" onclick="toggleSettings()" title="API 设置">⚙</button>
+<button class="settings-fab history-fab" onclick="toggleHistory()" title="历史记录" style="top:72px">📜</button>
 <div class="settings-panel" id="settingsPanel">
   <label>DeepSeek API Key</label>
   <input type="password" id="dsKey" placeholder="sk-...">
@@ -801,7 +827,7 @@ function parseRaw(text){
 }
 
 function showPrompt(d){
-  state.pendingPrompt=d;LS('lastPrompt',d);
+  state.pendingPrompt=d;LS('lastPrompt',d);saveHistory(d);
   const fields={boxScene:d.scene,boxAction:d.action,boxExpression:d.expression,boxLighting:d.lighting,boxTone:d.tone,boxComposition:d.composition};
   Object.entries(fields).forEach(([id,val])=>{
     const el=$(id);if(el&&val){if(el){const ta=el.querySelector('.s-text');if(ta){ta.value=val||'';el.style.display=''}}}else if(el)el.style.display='none'
@@ -861,6 +887,36 @@ $('downloadBtn').addEventListener('click',async()=>{
   const url=$('resultImg').src;if(!url)return;
   try{const r=await fetch(url);const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ai-portrait-'+Date.now()+'.png';a.click();URL.revokeObjectURL(a.href)}catch(e){window.open(url,'_blank')}
 });
+
+
+// ── History ──
+function saveHistory(d){
+  let h=LS('history');if(!h)h=[];
+  h.unshift({time:Date.now(),cat:state.category,sub:d.sub||'自动',cn:d.cn.slice(0,80),scene:d.scene,action:d.action,expression:d.expression,lighting:d.lighting,tone:d.tone,composition:d.composition,cnFull:d.cn,en:d.en,params:d.params});
+  if(h.length>50)h=h.slice(0,50);
+  LS('history',h);
+  renderHistory();
+}
+function renderHistory(){
+  const h=LS('history')||[]; const el=$('historyList');
+  if(!h.length){el.innerHTML='<div style="color:var(--text2);font-size:12px;text-align:center;padding:20px">暂无记录</div>';return}
+  el.innerHTML=h.map((item,i)=>'<div class="history-item" onclick="loadHistory('+i+')"><div class="hi-time">'+new Date(item.time).toLocaleString('zh-CN')+'</div><div class="hi-info">【'+item.cat+'·'+item.sub+'】</div><div class="hi-preview">'+escapeHtml(item.cn||item.en||'')+'</div></div>').join('');
+}
+function loadHistory(i){
+  const h=LS('history');if(!h||!h[i])return;
+  const item=h[i];
+  state.category=item.cat;state.subStyle=item.sub;
+  LS('category',item.cat);LS('subStyle',item.sub);
+  const d={scene:item.scene,action:item.action,expression:item.expression,lighting:item.lighting,tone:item.tone,composition:item.composition,cn:item.cnFull||item.cn,en:item.en,sub:item.sub,params:item.params||{}};
+  state.pendingPrompt=d;LS('lastPrompt',d);saveHistory(d);
+  showPrompt(d);toggleHistory();
+}
+function toggleHistory(){
+  $('historyPanel').classList.toggle('show');
+  if($('historyPanel').classList.contains('show')){renderHistory();$('settingsPanel').classList.remove('show')}
+}
+function clearHistory(){if(confirm('确定清空所有历史记录？')){LS('history',[]);renderHistory()}}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').slice(0,100)}
 
 // ── Reference ──
 function previewRef(i){const f=i.files[0];if(!f)return;$('refName').textContent=f.name;$('refClear').style.display='';$('uploadZone').classList.add('has-file');const r=new FileReader();r.onload=e=>{$('refPreview').src=e.target.result;$('refPreview').classList.add('show')};r.readAsDataURL(f)}

@@ -553,6 +553,8 @@ body {
   <div class="status-bar">
     <span class="status-dot ok" id="statusDot"></span>
     <span class="status-text" id="statusText">API 就绪</span>
+    <span style="font-size:12px;color:var(--text2)">| 积分: <b style="color:var(--accent)" id="creditBal">-</b></span>
+    <a href="/payment" style="font-size:11px;color:var(--primary2);margin-left:8px;text-decoration:none">⚡充值</a>
   </div>
 
   <!-- Step 1: Category -->
@@ -708,13 +710,13 @@ function updateStatus(){
 }
 function saveSettings(){
   LS('ds_key',$('dsKey').value.trim());LS('gw_key',$('gwKey').value.trim());LS('gw_base',$('gwBase').value.trim()||'https://api.geeknow.ai/v1');
-  toggleSettings();updateStatus();
+  toggleSettings();updateStatus();loadCredits();
 }
 function toggleSettings(){
   $('settingsPanel').classList.toggle('show');
   if($('settingsPanel').classList.contains('show')){$('dsKey').value=getDS();$('gwKey').value=getGW();$('gwBase').value=getGWBase()}
 }
-updateStatus();
+updateStatus();loadCredits();
 
 // ── Models ──
 const promptMd=[{id:'deepseek-chat',n:'DeepSeek'},{id:'deepseek-v4-pro',n:'DeepSeek V4 Pro'},{id:'gemini-3-pro-preview',n:'Gemini 3 Pro'},{id:'gemini-2.5-pro',n:'Gemini 2.5 Pro'},{id:'doubao-seed-1-6-250615',n:'豆包 Seed 1.6'},{id:'doubao-pro-256k',n:'豆包 Pro'},{id:'gpt-5',n:'GPT-5'},{id:'gpt-5.4',n:'GPT-5.4'},{id:'claude-opus-4-7',n:'Claude Opus 4.7'},{id:'qwen3-max',n:'通义千问 Max'},{id:'kimi-k2.6',n:'Kimi K2.6'}];
@@ -861,7 +863,7 @@ $('imageBtn').addEventListener('click',async()=>{
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');
     updateLsStep(3,true);
-    $('resultImg').src=d.data[0].url;$('imageResult').classList.add('show');LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
+    $('resultImg').src=d.data[0].url;$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
     $('imageResult').scrollIntoView({behavior:'smooth'});
   }catch(e){showErr(e.message)}finally{state.loading=false;hideLoader()}
 });

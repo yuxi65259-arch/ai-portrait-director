@@ -6,12 +6,30 @@ sys.stdout.reconfigure(encoding='utf-8')
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from config import validate_config, DEEPSEEK_API_KEY, OPENAI_API_KEY
 from models import PromptRequest, PromptResponse, ImageRequest, ImageResponse, ErrorResponse
 from models_config import PROMPT_MODELS, IMAGE_MODELS, DEFAULT_PROMPT_MODEL, DEFAULT_IMAGE_MODEL
 from prompt_engine import generate_prompt
 from image_generator import generate_image
+from database import create_user, get_user_by_key, add_credits, consume_credits, get_user_credits
+
+
+class LoginRequest(BaseModel):
+    api_key: str = ""
+    username: str = ""
+
+
+class PaymentConfirm(BaseModel):
+    api_key: str
+    amount: int
+    order_id: str = ""
+
+
+class ManualAdd(BaseModel):
+    api_key: str
+    amount: int
 
 # 启动警告
 warnings = validate_config()
@@ -54,6 +72,54 @@ async def list_models():
             "image": DEFAULT_IMAGE_MODEL,
         }
     }
+
+
+# ── 支付页面 ──
+@app.get("/payment", response_class=HTMLResponse)
+async def payment_page():
+    html_path = os.path.join(BASE_DIR, "docs", "payment.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
+
+# ── 认证 ──
+@app.post("/api/auth/login")
+async def api_login(body: LoginRequest):
+    user = get_user_by_key(body.api_key) if body.api_key else None
+    if not user and body.username:
+        user = create_user(body.username)
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "API Key 无效"})
+    return {"id": user["id"], "username": user["username"], "api_key": user["api_key"], "credits": user["credits"]}
+
+
+@app.post("/api/auth/me")
+async def api_me(body: LoginRequest):
+    user = get_user_by_key(body.api_key)
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+    return {"id": user["id"], "username": user["username"], "api_key": user["api_key"], "credits": user["credits"]}
+
+
+# ── 支付 ──
+@app.post("/api/payment/confirm")
+async def api_confirm_payment(body: PaymentConfirm):
+    user = get_user_by_key(body.api_key)
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+    credits = add_credits(user["id"], body.amount, f"订单 {body.order_id}")
+    return {"success": True, "credits": credits}
+
+
+@app.post("/api/payment/add")
+async def api_add_credits(body: ManualAdd):
+    user = get_user_by_key(body.api_key)
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+    if body.amount <= 0:
+        return {"success": False, "error": "积分数量必须大于0"}
+    credits = add_credits(user["id"], body.amount, "管理员充值")
+    return {"success": True, "credits": credits}
 
 
 # ── 步骤1：生成提示词（支持多模型）──
@@ -123,8 +189,18 @@ async def api_generate_image_json(payload: ImageRequest):
                 b64 = b64.split(",", 1)[1]
             ref_bytes = base64.b64decode(b64)
 
+        # 积分检查（可选：传 api_key 才扣积分）
+        cost = 1
+        user = None
+        if payload.api_key:
+            user = get_user_by_key(payload.api_key)
+            if user:
+                result = consume_credits(user["id"], cost, "AI写真生图")
+                if not result["success"]:
+                    return JSONResponse(status_code=402, content={"error": "积分不足", "detail": result["error"], "credits": result["credits"]})
+
         img = generate_image(prompt=payload.prompt, size=payload.size, model=payload.model, reference_image_bytes=ref_bytes)
-        return ImageResponse(image_url=img["url"], revised_prompt=img.get("revised_prompt", ""))
+        return ImageResponse(image_url=img["url"], revised_prompt=img.get("revised_prompt", ""), credits=user["credits"] if user else 0)
 
     except Exception as e:
         import traceback

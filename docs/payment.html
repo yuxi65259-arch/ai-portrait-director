@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>积分充值 - AI 写真导演</title>
+<style>
+:root {
+  --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #222240;
+  --primary: #7c3aed; --primary2: #a78bfa; --accent: #f59e0b;
+  --text: #e2e8f0; --text2: #94a3b8; --border: #2d2d4a;
+  --radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box }
+body {
+  font-family: -apple-system, 'Noto Sans SC', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  background-image: radial-gradient(ellipse at 20% 0%, rgba(124,58,237,0.08) 0%, transparent 60%);
+}
+.header { text-align: center; padding: 60px 20px 40px; }
+.header h1 { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, #c4b5fd, #a78bfa, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.header p { color: var(--text2); margin-top: 8px; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+.user-info {
+  text-align: center; margin-bottom: 30px;
+  padding: 16px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.user-info .key { font-family: monospace; color: var(--primary2); font-size: 14px; word-break: break-all; }
+.credit-display { font-size: 28px; font-weight: 800; color: var(--accent); margin: 8px 0; }
+.credit-label { color: var(--text2); font-size: 12px; }
+.packages { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
+.pkg-card {
+  background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius);
+  padding: 24px; text-align: center; cursor: pointer; transition: all 0.3s;
+}
+.pkg-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(124,58,237,0.2); }
+.pkg-card.best { border-color: var(--accent); position: relative; }
+.pkg-card.best::before { content: '推荐'; position: absolute; top: -10px; right: 16px; background: var(--accent); color: var(--bg); padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+.pkg-price { font-size: 28px; font-weight: 800; color: var(--text); }
+.pkg-price span { font-size: 14px; color: var(--text2); }
+.pkg-credits { font-size: 14px; color: var(--accent); margin: 8px 0; }
+.pkg-desc { font-size: 12px; color: var(--text2); }
+.btn {
+  display: block; width: 100%; padding: 14px; border-radius: 28px;
+  font-size: 15px; font-weight: 700; font-family: inherit;
+  border: none; cursor: pointer; transition: all 0.3s;
+  text-align: center; margin-top: 12px;
+}
+.btn-primary { background: linear-gradient(135deg, var(--primary), #6d28d9); color: #fff; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,58,237,0.4); }
+.btn-back { display: inline-block; color: var(--text2); text-decoration: none; font-size: 13px; margin-top: 20px; }
+.btn-back:hover { color: var(--primary2); }
+.login-section { text-align: center; padding: 40px; }
+.login-section input {
+  width: 100%; max-width: 400px; padding: 12px 16px;
+  background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 12px; color: var(--text); font-size: 14px;
+  margin-bottom: 12px; outline: none; text-align: center;
+  font-family: monospace;
+}
+.login-section input:focus { border-color: var(--primary); }
+.order-section {
+  display: none; background: var(--surface); border: 1px solid var(--accent);
+  border-radius: var(--radius); padding: 24px; text-align: center; margin-top: 20px;
+}
+.order-section h3 { color: var(--accent); margin-bottom: 12px; }
+.order-section .order-id { font-family: monospace; font-size: 14px; color: var(--primary2); margin: 8px 0; }
+.order-section .order-amount { font-size: 20px; font-weight: 700; }
+.manual-section { margin-top: 30px; padding: 20px; background: var(--surface2); border-radius: var(--radius); }
+.manual-section h4 { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+.manual-section input { width: 100%; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; margin-bottom: 8px; }
+.hidden { display: none !important; }
+.footer { text-align: center; color: #4a4a6a; font-size: 12px; padding: 20px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>⚡ 积分充值</h1>
+  <p>1 元 = 10 积分 · 生成 1 张图片消耗 1 积分</p>
+</div>
+
+<div class="container">
+  <!-- Login / User Info -->
+  <div id="loginSection" class="login-section">
+    <h3 style="margin-bottom:12px">请输入你的 API Key 登录</h3>
+    <input type="text" id="apiKeyInput" placeholder="px-xxxxxxxxxxxxxxxxxxxxxxxx">
+    <button class="btn btn-primary" style="max-width:200px;margin:8px auto" onclick="login()">登录</button>
+    <p style="font-size:11px;color:var(--text2);margin-top:8px">新用户输入任意用户名自动注册</p>
+    <input type="text" id="usernameInput" placeholder="用户名（注册时填写）" style="margin-top:4px">
+  </div>
+
+  <div id="userSection" class="hidden">
+    <div class="user-info">
+      <div class="credit-label">当前积分</div>
+      <div class="credit-display" id="creditDisplay">0</div>
+      <div class="key">API Key: <span id="apiKeyDisplay"></span></div>
+    </div>
+
+    <h3 style="margin-bottom:16px;text-align:center">选择充值套餐</h3>
+    <div class="packages">
+      <div class="pkg-card" onclick="selectPkg(0)">
+        <div class="pkg-price">10<span> 元</span></div>
+        <div class="pkg-credits">+100 积分</div>
+        <div class="pkg-desc">适合轻度使用</div>
+        <button class="btn btn-primary">购买</button>
+      </div>
+      <div class="pkg-card best" onclick="selectPkg(1)">
+        <div class="pkg-price">50<span> 元</span></div>
+        <div class="pkg-credits">+500 积分</div>
+        <div class="pkg-desc">最受欢迎 · 超值</div>
+        <button class="btn btn-primary">购买</button>
+      </div>
+      <div class="pkg-card" onclick="selectPkg(2)">
+        <div class="pkg-price">100<span> 元</span></div>
+        <div class="pkg-credits">+1000 积分</div>
+        <div class="pkg-desc">专业用户首选</div>
+        <button class="btn btn-primary">购买</button>
+      </div>
+      <div class="pkg-card" onclick="selectPkg(3)">
+        <div class="pkg-price">500<span> 元</span></div>
+        <div class="pkg-credits">+5000 积分</div>
+        <div class="pkg-desc">企业级 · 最划算</div>
+        <button class="btn btn-primary">购买</button>
+      </div>
+    </div>
+
+    <div class="order-section" id="orderSection">
+      <h3>📋 充值订单</h3>
+      <p>金额: <span class="order-amount" id="orderAmount">0 元</span> | 积分: <span id="orderCredits">0</span></p>
+      <p class="order-id">订单号: <span id="orderId"></span></p>
+      <p style="color:var(--text2);font-size:12px;margin-top:12px">联系客服完成支付后，积分自动到账</p>
+      <button class="btn btn-primary" style="max-width:200px;margin:12px auto" onclick="confirmPayment()">我已支付，确认到账</button>
+    </div>
+
+    <div class="manual-section">
+      <h4>🔧 管理员充值（手动添加积分）</h4>
+      <input type="text" id="manualAmount" placeholder="输入积分数量">
+      <button class="btn btn-primary" style="max-width:200px;margin:8px auto" onclick="manualAdd()">添加积分</button>
+    </div>
+
+    <div style="text-align:center;margin-top:20px">
+      <a href="/" class="btn-back">← 返回首页</a>
+    </div>
+  </div>
+
+  <div class="footer">AI 写真导演 · 积分系统 · 1元=10积分</div>
+</div>
+
+<script>
+const BASE = location.hostname === 'localhost' ? '' : 'https://yuxi65259-arch.github.io/ai-portrait-director';
+const API = location.hostname === 'localhost' ? '' : 'https://api.your-backend.com'; // change to your backend URL
+const $ = id => document.getElementById(id);
+
+let currentUser = null;
+let currentOrder = null;
+
+function login() {
+  const key = $('apiKeyInput').value.trim();
+  const name = $('usernameInput').value.trim() || 'user_' + Date.now().toString(36);
+  if (!key) { alert('请输入 API Key'); return; }
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ api_key: key, username: name })
+  }).then(r => r.json()).then(d => {
+    if (d.api_key) {
+      currentUser = d;
+      localStorage.setItem('user_key', d.api_key);
+      showUser(d);
+    } else {
+      alert('登录失败: ' + (d.error || '未知错误'));
+    }
+  }).catch(e => alert('网络错误: ' + e.message));
+}
+
+function showUser(user) {
+  $('loginSection').classList.add('hidden');
+  $('userSection').classList.remove('hidden');
+  $('creditDisplay').textContent = user.credits;
+  $('apiKeyDisplay').textContent = user.api_key;
+}
+
+function selectPkg(i) {
+  const pkgs = [
+    { price: 10, credits: 100 },
+    { price: 50, credits: 500 },
+    { price: 100, credits: 1000 },
+    { price: 500, credits: 5000 },
+  ];
+  const p = pkgs[i];
+  $('orderAmount').textContent = p.price + ' 元';
+  $('orderCredits').textContent = p.credits;
+  $('orderId').textContent = 'PX-' + Date.now().toString(36).toUpperCase();
+  $('orderSection').style.display = 'block';
+  currentOrder = { price: p.price, credits: p.credits, id: $('orderId').textContent };
+}
+
+function confirmPayment() {
+  if (!currentUser || !currentOrder) return;
+  fetch('/api/payment/confirm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: currentUser.api_key,
+      amount: currentOrder.credits,
+      order_id: currentOrder.id,
+    })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      currentUser.credits = d.credits;
+      $('creditDisplay').textContent = d.credits;
+      $('orderSection').style.display = 'none';
+      alert('充值成功！获得 ' + currentOrder.credits + ' 积分');
+    } else {
+      alert('充值失败: ' + (d.error || '请先完成支付'));
+    }
+  });
+}
+
+function manualAdd() {
+  const amt = parseInt($('manualAmount').value);
+  if (!amt || amt <= 0) { alert('请输入有效积分数量'); return; }
+  fetch('/api/payment/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ api_key: currentUser.api_key, amount: amt })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      currentUser.credits = d.credits;
+      $('creditDisplay').textContent = d.credits;
+      alert('已添加 ' + amt + ' 积分');
+    } else {
+      alert('失败: ' + (d.error || ''));
+    }
+  });
+}
+
+// Auto-login if key saved
+(function () {
+  const savedKey = localStorage.getItem('user_key');
+  if (savedKey) {
+    $('apiKeyInput').value = savedKey;
+    login();
+  }
+})();
+</script>
+</body>
+</html>

@@ -335,6 +335,21 @@ body {
   padding: 18px;
   margin-bottom: 12px;
 }
+
+.structured-card .s-edit {
+  width: 100%; min-height: 60px;
+  background: transparent; color: var(--text2);
+  border: 1px solid transparent; border-radius: 6px;
+  padding: 4px; font-family: inherit; font-size: 13px;
+  line-height: 1.7; resize: vertical; outline: none;
+}
+.structured-card:hover .s-edit { border-color: var(--border); }
+.structured-card .s-edit:focus, .structured-card .s-edit:not([readonly]) {
+  border-color: var(--primary); color: var(--text);
+  background: rgba(124,58,237,0.05);
+}
+.structured-card .s-edit[readonly] { cursor: default; }
+
 .structured-card .s-title {
   font-size: 12px;
   color: var(--primary2);
@@ -562,12 +577,12 @@ body {
 
       <!-- Structured fields -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div class="structured-card" id="boxScene"><div class="s-title">📷 场景</div><div class="s-text"></div></div>
-        <div class="structured-card" id="boxAction"><div class="s-title">💃 动作/姿态</div><div class="s-text"></div></div>
-        <div class="structured-card" id="boxExpression"><div class="s-title">😊 表情/情绪</div><div class="s-text"></div></div>
-        <div class="structured-card" id="boxLighting"><div class="s-title">💡 光线方案</div><div class="s-text"></div></div>
-        <div class="structured-card" id="boxTone"><div class="s-title">🎨 色调/影调</div><div class="s-text"></div></div>
-        <div class="structured-card" id="boxComposition"><div class="s-title">📐 构图建议</div><div class="s-text"></div></div>
+        <div class="structured-card" id="boxScene"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">📷 场景</div><textarea class="s-text s-edit" readonly></textarea></div>
+        <div class="structured-card" id="boxAction"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">💃 动作/姿态</div><textarea class="s-text s-edit" readonly></textarea></div>
+        <div class="structured-card" id="boxExpression"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">😊 表情/情绪</div><textarea class="s-text s-edit" readonly></textarea></div>
+        <div class="structured-card" id="boxLighting"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">💡 光线方案</div><textarea class="s-text s-edit" readonly></textarea></div>
+        <div class="structured-card" id="boxTone"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">🎨 色调/影调</div><textarea class="s-text s-edit" readonly></textarea></div>
+        <div class="structured-card" id="boxComposition"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">📐 构图建议</div><textarea class="s-text s-edit" readonly></textarea></div>
       </div>
 
       <div class="prompt-box">
@@ -784,7 +799,7 @@ function showPrompt(d){
   state.pendingPrompt=d;
   const fields={boxScene:d.scene,boxAction:d.action,boxExpression:d.expression,boxLighting:d.lighting,boxTone:d.tone,boxComposition:d.composition};
   Object.entries(fields).forEach(([id,val])=>{
-    const el=$(id);if(el&&val){el.querySelector('.s-text').textContent=val;el.style.display=''}else if(el)el.style.display='none'
+    const el=$(id);if(el&&val){if(el){const ta=el.querySelector('.s-text');if(ta){ta.value=val||'';el.style.display=''}}}else if(el)el.style.display='none'
   });
   $('resultTitle').textContent='【'+state.category+' · '+ (d.sub||'自动匹配')+'】';
   $('cnPrompt').value=d.cn;$('enPrompt').value=d.en;

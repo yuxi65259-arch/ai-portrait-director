@@ -103,28 +103,41 @@ async def api_generate_prompt(request: PromptRequest):
         )
 
 
-# ── 步骤2：生图（支持参考图上传 + 多模型）──
+# ── 步骤2：生图（支持 FormData + JSON 两种模式）──
 @app.post("/api/generate-image", response_model=ImageResponse)
 async def api_generate_image(
-    prompt: str = Form(...),
+    prompt: str = Form(None),
     size: str = Form("1024x1024"),
     model: str = Form(DEFAULT_IMAGE_MODEL),
     reference_image: UploadFile = File(None),
 ):
     try:
         if not OPENAI_API_KEY:
-            return JSONResponse(
-                status_code=503,
-                content=ErrorResponse(
-                    error="OpenAI Key 未配置",
-                    detail="缺少 OPENAI_API_KEY，请在 .env 文件中填入密钥后重启服务",
-                    code="API_KEY_MISSING",
-                ).model_dump(),
-            )
+            return JSONResponse(status_code=503, content=ErrorResponse(
+                error="OpenAI Key 未配置",
+                detail="缺少 OPENAI_API_KEY，请在 .env 文件中填入密钥后重启服务",
+                code="API_KEY_MISSING",
+            ).model_dump())
 
         ref_bytes = None
-        if reference_image and reference_image.filename:
-            ref_bytes = await reference_image.read()
+        # FormData mode
+        if prompt is not None:
+            if reference_image and reference_image.filename:
+                ref_bytes = await reference_image.read()
+        else:
+            # JSON mode
+            import json
+            body = await request.json()
+            prompt = body.get("prompt", "")
+            size = body.get("size", "1024x1024")
+            model = body.get("model", DEFAULT_IMAGE_MODEL)
+            ref_b64 = body.get("image")
+            if ref_b64:
+                import base64
+                # Remove data:image/...;base64, prefix if present
+                if "," in ref_b64:
+                    ref_b64 = ref_b64.split(",", 1)[1]
+                ref_bytes = base64.b64decode(ref_b64)
 
         img = generate_image(prompt=prompt, size=size, reference_image_bytes=ref_bytes, model=model)
 

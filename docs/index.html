@@ -296,7 +296,7 @@ $('promptBtn').addEventListener('click',async()=>{
 function parseRaw(text,cat){
   const r={scene:'',action:'',expression:'',lighting:'',tone:'',composition:'',chinese_prompt:'',english_prompt:'',sub_style:'',photography_params:{},negative_prompt:''};
   let m=text.match(/【子风格名】\s*[：:]\s*(.+?)(?:\n|$)/);if(m)r.sub_style=m[1].trim();
-  const extract=(hdr)=>{let m=text.match(new RegExp(hdr+'\\s*[：:]\\s*(.+?)(?=\\n['+'📷💃😊💡🎨📐🌐🌍📝⚠'+']|\\n━━|\\n🎬|\\Z)','s'));return m?m[1].trim():''};
+  const extract=(hdr)=>{let m=text.match(new RegExp(hdr+'\\s*[：:]\\s*(.+?)(?=\\n['+'📷💃😊💡🎨📐🌐🌍📝⚠'+']|\\n━━|\\n🎬|\\Z)','su'));return m?m[1].trim():''};
   r.scene=extract('📷 场景');r.action=extract('💃 动作/姿态');r.expression=extract('😊 表情/情绪');
   r.lighting=extract('💡 光线方案');r.tone=extract('🎨 色调/影调');r.composition=extract('📐 构图建议');
   m=text.match(/🌐.*?视觉方案.*?\n(.+?)(?=\n🌍|\nEnglish|\n━━|$)/s);if(m)r.chinese_prompt=m[1].trim();

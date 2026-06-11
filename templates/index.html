@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 写真提示词导演</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif;background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);min-height:100vh;color:#1e293b}
+.container{max-width:860px;margin:0 auto;padding:24px 16px 60px}
+.header{text-align:center;padding:32px 0 20px}
+.header h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header p{color:#64748b;margin-top:6px;font-size:14px}
+.card{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.card-title{font-size:15px;font-weight:600;margin-bottom:14px;color:#334155}
+.struct-item{margin-bottom:10px}
+.struct-label{display:inline-block;font-size:12px;font-weight:600;color:#6366f1;margin-bottom:4px;background:#eef2ff;padding:2px 8px;border-radius:6px}
+.struct-item .text{font-size:13px;line-height:1.6;color:#334155;padding-left:4px}
+/* Category */
+.cat-grid{display:flex;gap:10px;flex-wrap:wrap}
+.cat-btn{padding:10px 18px;border-radius:24px;border:2px solid #e2e8f0;background:#fff;cursor:pointer;font-size:14px;transition:all 0.2s;white-space:nowrap}
+.cat-btn:hover{border-color:#6366f1;color:#6366f1}
+.cat-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-color:transparent}
+/* Sub-style */
+.sub-grid{display:flex;gap:8px;flex-wrap:wrap;max-height:0;overflow:hidden;transition:max-height .4s,margin-top .4s}
+.sub-grid.show{max-height:400px;margin-top:14px}
+.sub-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;transition:.2s;white-space:nowrap}
+.sub-btn:hover{border-color:#ec4899;color:#ec4899}
+.sub-btn.active{background:#fdf2f8;color:#ec4899;border-color:#ec4899}
+/* Input */
+.pref-input{width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:12px;font-size:14px;resize:none;height:64px;transition:border-color .2s}
+.pref-input:focus{outline:none;border-color:#6366f1}
+/* Buttons */
+.btn-wrap{text-align:center;margin:24px 0}
+.btn{padding:14px 48px;font-size:17px;font-weight:700;border:none;border-radius:32px;cursor:pointer;transition:.3s}
+.btn-primary{color:#fff;background:linear-gradient(135deg,#6366f1,#ec4899);box-shadow:0 6px 24px rgba(99,102,241,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(99,102,241,.45)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{padding:12px 32px;font-size:14px;color:#6366f1;background:#eef2ff;border:2px solid #c7d2fe}
+.btn-secondary:hover{background:#e0e7ff}
+.btn-secondary:disabled{opacity:.4;cursor:not-allowed}
+/* Loading */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center}
+.overlay.hidden{display:none}
+.load-card{background:#fff;border-radius:20px;padding:40px;text-align:center;width:380px;max-width:90%}
+.load-card h3{margin:16px 0 8px;font-size:18px}
+.spinner{width:40px;height:40px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Result */
+.result.hidden{display:none}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.result-img{width:100%;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.result-right{display:flex;flex-direction:column;gap:14px}
+.prompt-block{background:#f8fafc;border-radius:12px;padding:16px}
+.prompt-block h4{font-size:13px;color:#6366f1;margin-bottom:8px}
+.prompt-block .text{font-size:13px;line-height:1.7;color:#334155;max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.btn-sm{padding:5px 14px;font-size:11px;border-radius:14px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;transition:.2s;margin-top:8px;margin-right:6px}
+.btn-sm:hover{background:#6366f1;color:#fff;border-color:#6366f1}
+.btn-sm.copied{background:#10b981;color:#fff;border-color:#10b981}
+/* Error */
+.error-bar{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:16px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.error-bar.hidden{display:none}
+.retry-btn{padding:6px 16px;border-radius:16px;border:1px solid #dc2626;color:#dc2626;background:#fff;cursor:pointer;font-size:13px}
+/* Params */
+.param-tags{display:flex;gap:8px;flex-wrap:wrap}
+.param-tag{font-size:11px;padding:3px 10px;border-radius:10px;background:#eef2ff;color:#4f46e5}
+/* Image status */
+.image-status{text-align:center;padding:40px;color:#94a3b8;border:2px dashed #e2e8f0;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.image-status .icon{font-size:40px}
+/* Mobile */
+@media(max-width:640px){
+  .result-grid{grid-template-columns:1fr}
+  .btn{padding:12px 36px;font-size:15px}
+  .header h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>AI 写真提示词导演</h1>
+    <p>选类别 → DeepSeek 出提示词 → Gemini Flash 生图</p>
+  </div>
+
+  <!-- Category -->
+  <div class="card">
+    <div class="card-title">1. 选择写真类别</div>
+    <div class="cat-grid" id="catGrid">
+      <button class="cat-btn" data-cat="个人写真">个人写真</button>
+      <button class="cat-btn" data-cat="婚纱写真">婚纱写真</button>
+      <button class="cat-btn" data-cat="旅拍写真">旅拍写真</button>
+      <button class="cat-btn" data-cat="创意/概念写真">创意/概念写真</button>
+      <button class="cat-btn" data-cat="COS写真">COS写真</button>
+    </div>
+    <div class="sub-grid" id="subGrid"></div>
+  </div>
+
+  <!-- Preference -->
+  <div class="card">
+    <div class="card-title">2. 自定义偏好（可选）</div>
+    <textarea class="pref-input" id="prefInput" placeholder="例如：想要秋天黄昏的感觉，不要摆拍，光线要柔和..."></textarea>
+  </div>
+
+  <!-- Step 1: 生成提示词 -->
+  <div class="card" style="margin-bottom:0">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:12px;color:#64748b">提示词模型:</span>
+        <select id="promptModel" style="padding:6px 10px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:12px"></select>
+      </div>
+      <button class="btn btn-primary" id="promptBtn" disabled style="margin:0">生成提示词</button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-bar hidden" id="errorBar">
+    <span id="errorMsg"></span>
+    <button class="retry-btn" id="retryBtn">重试</button>
+  </div>
+
+  <!-- Prompt Result -->
+  <div class="card result hidden" id="promptCard">
+    <div class="card-title">提示词方案 <span id="resultTitle" style="font-weight:400;color:#64748b;font-size:13px"></span></div>
+
+    <!-- 场景视觉方案 -->
+    <div style="background:#f0f4ff;border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-weight:600;font-size:14px;margin-bottom:10px;color:#4f46e5">🎬 场景视觉方案</div>
+      <div class="struct-item" id="itemScene"><span class="struct-label">📷 场景</span><div class="text"></div></div>
+      <div class="struct-item" id="itemAction"><span class="struct-label">💃 动作/姿态</span><div class="text"></div></div>
+      <div class="struct-item" id="itemExpression"><span class="struct-label">😊 表情/情绪</span><div class="text"></div></div>
+      <div class="struct-item" id="itemLighting"><span class="struct-label">💡 光线方案</span><div class="text"></div></div>
+      <div class="struct-item" id="itemTone"><span class="struct-label">🎨 色调/影调</span><div class="text"></div></div>
+      <div class="struct-item" id="itemComposition"><span class="struct-label">📐 构图建议</span><div class="text"></div></div>
+      <div class="param-tags" id="paramTags" style="margin-top:8px"></div>
+    </div>
+
+    <!-- 中文视觉方案 -->
+    <div class="prompt-block" style="margin-bottom:10px">
+      <h4>🌐 中文视觉方案（完整融合版）</h4>
+      <div class="text" id="cnPrompt"></div>
+      <button class="btn-sm" data-target="cnPrompt">复制中文方案</button>
+    </div>
+
+    <!-- English Prompt -->
+    <div class="prompt-block">
+      <h4>🌍 English Prompt (for DALL·E 3)</h4>
+      <div class="text" id="enPrompt"></div>
+      <button class="btn-sm" data-target="enPrompt">复制英文 Prompt</button>
+    </div>
+
+    <!-- Step 2: 生图 -->
+    <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0">
+      <div class="card-title" style="margin-bottom:10px">3. 生成图片（可选上传参考图）</div>
+      <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <select id="sizeSelect" style="padding:8px 12px;border-radius:12px;border:1.5px solid #e2e8f0;font-size:13px">
+          <option value="1792x1024">横版 16:9</option>
+          <option value="1024x1024">方形 1:1</option>
+          <option value="1024x1792">竖版 9:16</option>
+        </select>
+        <select id="imageModel" style="padding:8px 12px;border-radius:12px;border:1.5px solid #e2e8f0;font-size:12px"></select>
+        <button class="btn btn-secondary" id="imageBtn">生成图片</button>
+      </div>
+      <!-- 上传参考图 -->
+      <div style="display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap">
+        <label for="refUpload" style="font-size:12px;color:#64748b;cursor:pointer;padding:6px 14px;border:1px dashed #cbd5e1;border-radius:12px;transition:.2s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#cbd5e1'">
+          📷 上传参考图（可选）
+        </label>
+        <input type="file" id="refUpload" accept="image/*" style="display:none" onchange="previewRef(this)">
+        <span id="refName" style="font-size:11px;color:#94a3b8"></span>
+        <button id="refClear" style="display:none;font-size:11px;padding:2px 8px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer" onclick="clearRef()">清除</button>
+      </div>
+      <img id="refPreview" style="display:none;max-width:120px;max-height:120px;border-radius:8px;margin-top:8px;border:1px solid #e2e8f0">
+    </div>
+  </div>
+
+  <!-- Image Result -->
+  <div class="card result hidden" id="imageCard">
+    <div class="card-title">生成图片</div>
+    <img class="result-img" id="resultImg" src="" alt="生成写真" crossorigin="anonymous">
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-sm" onclick="window.open(document.getElementById('resultImg').src,'_blank')">新窗口打开</button>
+      <button class="btn-sm" id="downloadBtn" style="background:#10b981;color:#fff;border-color:#10b981">下载图片</button>
+    </div>
+  </div>
+
+  <div class="footer" style="text-align:center;color:#94a3b8;font-size:12px;margin-top:32px">AI写真提示词导演 V2.1 · DeepSeek + Gemini Flash</div>
+</div>
+
+<!-- Loading -->
+<div class="overlay hidden" id="loadingOverlay">
+  <div class="load-card">
+    <div class="spinner"></div>
+    <h3 id="loadingText">生成中...</h3>
+    <div class="timer" id="timer" style="color:#94a3b8;font-size:12px;margin-top:10px"></div>
+  </div>
+</div>
+
+<script>
+const state = {category:null,subStyle:null,loading:false,pendingPrompt:null,promptModel:null,imageModel:null};
+const subStyles = {
+  '个人写真':['清新日系','黑白情绪','法式慵懒','都市简约','胶片复古','韩系奶油','男友视角','居家随拍','光影切割','港风霓虹','日杂模特','清冷破碎'],
+  '婚纱写真':['韩式极简','森系自然','法式庄园','新中式','海边轻纱','城市街拍','电影剧情式','复古胶片','极地冰雪','沙漠风','烟火夜景','花房温室','民国旗袍'],
+  '旅拍写真':['城市漫游','自然风光','人文纪实','轻奢度假','公路旅行','极地探险','沙漠穿越','海岛潜水','古城穿越','游牧草原','火车旅行','都市夜景'],
+  '创意/概念写真':['童话幻想','复古时代','超现实','戏剧舞台','末日废土','赛博朋克','水下雨林','敦煌飞天','异形生物','破碎娃娃','未来战士','蝴蝶标本'],
+  'COS写真':['二次元动漫','游戏角色','古风仙侠','蒸汽朋克','克苏鲁/暗黑奇幻','特摄/超级英雄','赛博忍者','神话众神','洛丽塔/哥特','铠甲骑士','狐妖/妖怪','科幻机甲'],
+};
+
+const $=id=>document.getElementById(id);
+
+// Load models on page start
+(async()=>{
+  try{
+    const r=await fetch('/api/models');const d=await r.json();
+    const pm=$('promptModel'),im=$('imageModel');
+    d.prompt_models.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.name+' - '+m.desc;if(m.id===d.defaults.prompt)o.selected=true;pm.appendChild(o)});
+    d.image_models.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.name+' - '+m.desc;if(m.id===d.defaults.image)o.selected=true;im.appendChild(o)});
+    state.promptModel=d.defaults.prompt;state.imageModel=d.defaults.image;
+    pm.addEventListener('change',()=>state.promptModel=pm.value);
+    im.addEventListener('change',()=>state.imageModel=im.value);
+  }catch(e){console.error('Failed to load models',e)}
+})();
+
+// Category
+$('catGrid').addEventListener('click',e=>{
+  const b=e.target.closest('.cat-btn');if(!b)return;
+  state.category=b.dataset.cat;state.subStyle=null;
+  document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const sg=$('subGrid');sg.innerHTML='';sg.classList.remove('show');
+  if(subStyles[state.category]){
+    subStyles[state.category].forEach(s=>{
+      const el=document.createElement('button');el.className='sub-btn';el.textContent=s;
+      el.onclick=()=>{state.subStyle=s;sg.querySelectorAll('.sub-btn').forEach(x=>x.classList.remove('active'));el.classList.add('active');};
+      sg.appendChild(el);
+    });
+    sg.classList.add('show');
+  }
+  $('promptBtn').disabled=false;
+});
+
+// Prompt
+$('promptBtn').addEventListener('click',async()=>{
+  if(state.loading)return;
+  state.loading=true;hideError();showLoading('DeepSeek 生成提示词中...');
+  try{
+    const res=await fetch('/api/generate-prompt',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({category:state.category,sub_style:state.subStyle||null,custom_preference:$('prefInput').value.trim()||null,model:state.promptModel})});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.detail||e.error||`Error ${res.status}`)}
+    const d=await res.json();
+    state.pendingPrompt=d;
+    // 结构化字段
+    const map={itemScene:d.scene,itemAction:d.action,itemExpression:d.expression,
+      itemLighting:d.lighting,itemTone:d.tone,itemComposition:d.composition};
+    Object.entries(map).forEach(([id,val])=>{
+      const el=$(id);if(el&&val){el.querySelector('.text').textContent=val;el.style.display=''}else if(el){el.style.display='none'}
+    });
+    $('resultTitle').textContent=`【${d.category}·${d.sub_style}】`;
+    $('cnPrompt').textContent=d.chinese_prompt;$('enPrompt').textContent=d.english_prompt;
+    $('paramTags').innerHTML=Object.entries(d.photography_params||{}).map(([k,v])=>`<span class="param-tag">${k}: ${v}</span>`).join('');
+    $('promptCard').classList.remove('hidden');$('imageCard').classList.add('hidden');
+    $('promptCard').scrollIntoView({behavior:'smooth'});
+  }catch(e){showError(e.message)}finally{state.loading=false;hideLoading()}
+});
+
+// Image
+$('imageBtn').addEventListener('click',async()=>{
+  if(state.loading||!state.pendingPrompt)return;
+  state.loading=true;hideError();showLoading('GPT-Image-2 生成图片中...');
+  try{
+    const fd=new FormData();
+    fd.append('prompt',state.pendingPrompt.english_prompt);
+    fd.append('size',$('sizeSelect').value);
+    fd.append('model',state.imageModel);
+    const refFile=$('refUpload').files[0];
+    if(refFile) fd.append('reference_image',refFile);
+    const res=await fetch('/api/generate-image',{method:'POST',body:fd});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.detail||e.error||`Error ${res.status}`)}
+    const d=await res.json();
+    $('resultImg').src=d.image_url;$('imageCard').classList.remove('hidden');
+    $('imageCard').scrollIntoView({behavior:'smooth'});
+  }catch(e){showError(e.message)}finally{state.loading=false;hideLoading()}
+});
+
+// Reference image
+function previewRef(input){
+  const file=input.files[0];
+  if(!file)return;
+  $('refName').textContent=file.name;
+  $('refClear').style.display='';
+  const reader=new FileReader();
+  reader.onload=e=>{$('refPreview').src=e.target.result;$('refPreview').style.display=''};
+  reader.readAsDataURL(file);
+}
+function clearRef(){
+  $('refUpload').value='';
+  $('refName').textContent='';
+  $('refClear').style.display='none';
+  $('refPreview').style.display='none';
+}
+
+// Loading
+let timerI;
+function showLoading(msg){$('loadingText').textContent=msg;$('loadingOverlay').classList.remove('hidden');let s=0;$('timer').textContent='已等待 0 秒';timerI=setInterval(()=>{s++;$('timer').textContent=`已等待 ${s} 秒`},1000)}
+function hideLoading(){$('loadingOverlay').classList.add('hidden');clearInterval(timerI)}
+function showError(msg){$('errorBar').classList.remove('hidden');$('errorMsg').textContent=msg;$('errorBar').scrollIntoView({behavior:'smooth'})}
+function hideError(){$('errorBar').classList.add('hidden')}
+$('retryBtn').addEventListener('click',()=>{if(state.pendingPrompt)$('imageBtn').click();else $('promptBtn').click()});
+
+// Download
+$('downloadBtn').addEventListener('click',async()=>{
+  const url=$('resultImg').src;
+  if(!url)return;
+  try{
+    const r=await fetch(url);
+    const blob=await r.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='ai-portrait-' + Date.now() + '.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }catch(e){
+    window.open(url,'_blank');
+  }
+});
+
+// Copy
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.btn-sm');if(!b||!b.dataset.target)return;
+  const el=$(b.dataset.target);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{b.textContent='已复制';b.classList.add('copied');setTimeout(()=>{b.textContent='复制';b.classList.remove('copied')},2000)});
+});
+</script>
+</body>
+</html>

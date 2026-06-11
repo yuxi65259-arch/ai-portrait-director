@@ -359,7 +359,22 @@ body {
   font-size: 12px; font-weight: 700; color: var(--primary2);
   margin-bottom: 8px;
 }
-.prompt-box .p-content {
+.prompt-box 
+.p-edit {
+  width: 100%; min-height: 120px; 
+  background: var(--surface); color: var(--text2);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; font-family: inherit; font-size: 13px;
+  line-height: 1.8; resize: vertical; outline: none;
+  overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+}
+.p-edit:focus, .p-edit:not([readonly]) { 
+  border-color: var(--primary); color: var(--text);
+  background: var(--surface2);
+}
+.p-edit[readonly] { cursor: default; }
+
+.p-content {
   font-size: 13px; line-height: 1.8;
   color: var(--text2);
   max-height: 240px;
@@ -557,13 +572,13 @@ body {
 
       <div class="prompt-box">
         <div class="p-title">🌐 中文视觉方案</div>
-        <div class="p-content" id="cnPrompt"></div>
-        <button class="btn-sm" data-target="cnPrompt" style="margin-top:8px">复制中文方案</button>
+        <textarea class="p-content p-edit" id="cnPrompt" placeholder="AI 生成的中文提示词将显示在这里..." readonly></textarea>
+        <button class="btn-sm edit-btn" data-target="cnPrompt" style="margin-top:8px">✏️ 编辑</button><button class="btn-sm" data-target="cnPrompt" style="margin-top:8px">📋 复制</button>
       </div>
       <div class="prompt-box">
         <div class="p-title">🌍 English Prompt</div>
-        <div class="p-content" id="enPrompt"></div>
-        <button class="btn-sm" data-target="enPrompt" style="margin-top:8px">复制英文 Prompt</button>
+        <textarea class="p-content p-edit" id="enPrompt" placeholder="AI 生成的英文提示词将显示在这里..." readonly></textarea>
+        <button class="btn-sm edit-btn" data-target="enPrompt" style="margin-top:8px">✏️ 编辑</button><button class="btn-sm" data-target="enPrompt" style="margin-top:8px">📋 复制</button>
       </div>
       <div id="paramChips" style="margin-top:8px"></div>
 
@@ -772,7 +787,7 @@ function showPrompt(d){
     const el=$(id);if(el&&val){el.querySelector('.s-text').textContent=val;el.style.display=''}else if(el)el.style.display='none'
   });
   $('resultTitle').textContent='【'+state.category+' · '+ (d.sub||'自动匹配')+'】';
-  $('cnPrompt').textContent=d.cn;$('enPrompt').textContent=d.en;
+  $('cnPrompt').value=d.cn;$('enPrompt').value=d.en;
   $('paramChips').innerHTML=Object.entries(d.params||{}).map(([k,v])=>'<span class="param-chip">'+k+': '+v+'</span>').join('');
   $('promptResult').classList.add('show');$('imageResult').classList.remove('show');
   $('promptResult').scrollIntoView({behavior:'smooth'});
@@ -788,9 +803,9 @@ $('imageBtn').addEventListener('click',async()=>{
     let body;
     if(refF){
       const b64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(refF)});
-      body=JSON.stringify({model,prompt:state.pendingPrompt.en,image:b64,size:$('sizeSelect').value,n:1});
+      body=JSON.stringify({model,prompt:($('enPrompt').value||state.pendingPrompt.en),image:b64,size:$('sizeSelect').value,n:1});
     }else{
-      body=JSON.stringify({model,prompt:state.pendingPrompt.en,size:$('sizeSelect').value,n:1});
+      body=JSON.stringify({model,prompt:($('enPrompt').value||state.pendingPrompt.en),size:$('sizeSelect').value,n:1});
     }
     const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
     const imgUrl=isLocal?'/api/generate-image':(getGWBase()+'/images/generations');
@@ -816,9 +831,9 @@ $('retryBtn').addEventListener('click',()=>{if(state.pendingPrompt)$('imageBtn')
 
 // ── Copy ──
 document.addEventListener('click',e=>{
-  const b=e.target.closest('.btn-sm');if(!b||!b.dataset.target)return;
+  const b=e.target.closest('.btn-sm:not(.edit-btn)');if(!b||!b.dataset.target)return;
   const el=$(b.dataset.target);if(!el)return;
-  navigator.clipboard.writeText(el.textContent).then(()=>{b.textContent='已复制 ✓';b.style.background='#10b981';b.style.color='#fff';b.style.borderColor='#10b981';setTimeout(()=>{b.textContent='复制';b.style.background='';b.style.color='';b.style.borderColor=''},2000)});
+  navigator.clipboard.writeText(el.value||el.textContent).then(()=>{b.textContent='已复制 ✓';b.style.background='#10b981';b.style.color='#fff';b.style.borderColor='#10b981';setTimeout(()=>{b.textContent='复制';b.style.background='';b.style.color='';b.style.borderColor=''},2000)});
 });
 
 // ── Download ──

@@ -738,6 +738,11 @@ $('sizeSelect').addEventListener('change',()=>LS('isz',$('sizeSelect').value));
 
 // Restore saved state
 (function(){
+  const lastP=LS('lastPrompt');
+  if(lastP){
+    state.pendingPrompt=lastP;
+    showPrompt(lastP);
+  }
   const cat=LS('category');if(!cat)return;
   state.category=cat;
   const btn=document.querySelector('[data-cat="'+cat+'"]');
@@ -796,7 +801,7 @@ function parseRaw(text){
 }
 
 function showPrompt(d){
-  state.pendingPrompt=d;
+  state.pendingPrompt=d;LS('lastPrompt',d);
   const fields={boxScene:d.scene,boxAction:d.action,boxExpression:d.expression,boxLighting:d.lighting,boxTone:d.tone,boxComposition:d.composition};
   Object.entries(fields).forEach(([id,val])=>{
     const el=$(id);if(el&&val){if(el){const ta=el.querySelector('.s-text');if(ta){ta.value=val||'';el.style.display=''}}}else if(el)el.style.display='none'
@@ -804,7 +809,7 @@ function showPrompt(d){
   $('resultTitle').textContent='【'+state.category+' · '+ (d.sub||'自动匹配')+'】';
   $('cnPrompt').value=d.cn;$('enPrompt').value=d.en;
   $('paramChips').innerHTML=Object.entries(d.params||{}).map(([k,v])=>'<span class="param-chip">'+k+': '+v+'</span>').join('');
-  $('promptResult').classList.add('show');$('imageResult').classList.remove('show');
+  $('promptResult').classList.add('show');
   $('promptResult').scrollIntoView({behavior:'smooth'});
 }
 

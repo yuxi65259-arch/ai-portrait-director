@@ -286,7 +286,7 @@ $('promptBtn').addEventListener('click',async()=>{
         {role:'user',content:`类别：${state.category}\n子风格：${state.subStyle||'随机'}\n用户额外偏好：${$('prefInput').value.trim()||'无'}`}
       ],temperature:0.85,max_tokens:3000})
     });
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||e.error||`HTTP ${res.status}`)}
+    if(!res.ok){const txt=await res.text(); let msg; try{msg=JSON.parse(txt).error?.message||JSON.parse(txt).error}catch{msg=txt.slice(0,300)} throw new Error(msg||`HTTP ${res.status}`)}
     const d=await res.json(); const raw=d.choices[0].message.content;
     const parsed=parseRaw(raw,state.category);
     showPromptResult(parsed);

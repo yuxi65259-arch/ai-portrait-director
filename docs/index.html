@@ -835,7 +835,7 @@ function showPrompt(d){
   $('resultTitle').textContent='【'+state.category+' · '+ (d.sub||'自动匹配')+'】';
   $('cnPrompt').value=d.cn;$('enPrompt').value=d.en;
   $('paramChips').innerHTML=Object.entries(d.params||{}).map(([k,v])=>'<span class="param-chip">'+k+': '+v+'</span>').join('');
-  $('promptResult').classList.add('show');
+  $('promptResult').classList.add('show');if(d.imgUrl){$('resultImg').src=d.imgUrl;$('imageResult').classList.add('show');}
   $('promptResult').scrollIntoView({behavior:'smooth'});
 }
 
@@ -861,7 +861,7 @@ $('imageBtn').addEventListener('click',async()=>{
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');
     updateLsStep(3,true);
-    $('resultImg').src=d.data[0].url;$('imageResult').classList.add('show');
+    $('resultImg').src=d.data[0].url;$('imageResult').classList.add('show');LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
     $('imageResult').scrollIntoView({behavior:'smooth'});
   }catch(e){showErr(e.message)}finally{state.loading=false;hideLoader()}
 });
@@ -907,7 +907,7 @@ function loadHistory(i){
   const item=h[i];
   state.category=item.cat;state.subStyle=item.sub;
   LS('category',item.cat);LS('subStyle',item.sub);
-  const d={scene:item.scene,action:item.action,expression:item.expression,lighting:item.lighting,tone:item.tone,composition:item.composition,cn:item.cnFull||item.cn,en:item.en,sub:item.sub,params:item.params||{}};
+  const d={scene:item.scene,action:item.action,expression:item.expression,lighting:item.lighting,tone:item.tone,composition:item.composition,cn:item.cnFull||item.cn,en:item.en,sub:item.sub,params:item.params||{},imgUrl:item.imgUrl||''};
   state.pendingPrompt=d;LS('lastPrompt',d);saveHistory(d);
   showPrompt(d);toggleHistory();
 }

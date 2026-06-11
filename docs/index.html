@@ -90,7 +90,7 @@ select{padding:8px 12px;border-radius:12px;border:1.5px solid #e2e8f0;font-size:
 <div class="container">
   <div class="header">
     <h1>AI 写真提示词导演</h1>
-    <p>选类别 → 生成提示词 → AI 生图 | <span id="statusTag" style="color:#f59e0b">请先设置 API Key</span></p>
+    <p>选类别 → 生成提示词 → AI 生图 | <span id="statusTag" style="color:#10b981">API 就绪</span></p>
   </div>
 
   <!-- Category -->
@@ -190,8 +190,8 @@ select{padding:8px 12px;border-radius:12px;border:1.5px solid #e2e8f0;font-size:
 
 <script>
 // ── API Keys ──
-function getDS(){return localStorage.getItem('ds_key')||''}
-function getGW(){return localStorage.getItem('gw_key')||''}
+function getDS(){return localStorage.getItem('ds_key')||'sk-0fe9505332be4b408cb9030a97d7a199'}
+function getGW(){return localStorage.getItem('gw_key')||'sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry'}
 function getGWBase(){return localStorage.getItem('gw_base')||'https://api.geeknow.ai/v1'}
 function saveSettings(){
   localStorage.setItem('ds_key',$('dsKey').value.trim());

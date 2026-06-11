@@ -279,14 +279,15 @@ $('promptBtn').addEventListener('click',async()=>{
     const isDeepSeek=model.startsWith('deepseek');
     const baseUrl=isDeepSeek?'https://api.deepseek.com':getGWBase();
     const apiKey=isDeepSeek?getDS():getGW();
+    const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(), 90000);
     const res=await fetch(baseUrl+'/chat/completions',{
-      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model, messages:[
         {role:'system',content:SYSTEM_PROMPT},
         {role:'user',content:`类别：${state.category}\n子风格：${state.subStyle||'随机'}\n用户额外偏好：${$('prefInput').value.trim()||'无'}`}
       ],temperature:0.85,max_tokens:3000})
-    });
-    if(!res.ok){const txt=await res.text(); let msg; try{msg=JSON.parse(txt).error?.message||JSON.parse(txt).error}catch{msg=txt.slice(0,300)} throw new Error(msg||`HTTP ${res.status}`)}
+    }).catch(e=>{throw new Error('网络请求失败: '+(e.message||'请检查网络连接或浏览器是否拦截了跨域请求'))});
+    if(!res.ok){const txt=await res.text().catch(()=>''); let msg; try{msg=JSON.parse(txt).error?.message||JSON.parse(txt).error||txt.slice(0,200)}catch{msg=txt.slice(0,200)} throw new Error(msg||'HTTP '+res.status)}
     const d=await res.json(); const raw=d.choices[0].message.content;
     const parsed=parseRaw(raw,state.category);
     showPromptResult(parsed);

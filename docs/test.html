@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>API Test</title></head>
+<body>
+<h3>API 连通性测试</h3>
+<button onclick="test()">测试 DeepSeek API</button>
+<pre id="out"></pre>
+<script>
+const $=id=>document.getElementById(id);
+async function test(){
+  $('out').textContent='Testing...';
+  try{
+    const res=await fetch('https://api.deepseek.com/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer sk-0fe9505332be4b408cb9030a97d7a199'},
+      body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:'say hi'}],max_tokens:20})
+    });
+    const d=await res.json();
+    $('out').textContent=res.ok?'OK: '+d.choices[0].message.content:'FAIL: '+JSON.stringify(d,null,2);
+  }catch(e){
+    $('out').textContent='NETWORK ERROR: '+e.message+'\n\nThis means your browser or network is blocking the request to api.deepseek.com';
+  }
+}
+</script>
+</body></html>

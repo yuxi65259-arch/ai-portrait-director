@@ -240,7 +240,7 @@ function fillSelect(el,models,defId){
   models.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.name;if(m.id===defId)o.selected=true;el.appendChild(o)});
 }
 fillSelect($('promptModel'),promptModels,'deepseek-chat');
-fillSelect($('imageModel'),imageModels,'gpt-image-2');
+fillSelect($('imageModel'),imageModels,'gemini-2.5-flash-image');
 
 // ── State (with localStorage persistence) ──
 function savePref(k,v){try{localStorage.setItem('px_'+k,JSON.stringify(v))}catch(e){}}

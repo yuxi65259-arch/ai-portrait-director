@@ -25,4 +25,4 @@ IMAGE_MODELS = [
 ]
 
 DEFAULT_PROMPT_MODEL = "deepseek-chat"
-DEFAULT_IMAGE_MODEL = "gpt-image-2"
+DEFAULT_IMAGE_MODEL = "gemini-2.5-flash-image"

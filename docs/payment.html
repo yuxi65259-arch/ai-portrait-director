@@ -141,7 +141,7 @@ body {
     </div>
 
     <div style="text-align:center;margin-top:20px">
-      <a href="/" style="display:inline-flex;align-items:center;gap:4px;padding:8px 16px;background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--text2);text-decoration:none;font-size:13px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--primary2)';this.style.color='var(--primary2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">← 返回首页</a>
+      <a id="backLink" href="/" style="display:inline-flex;align-items:center;gap:4px;padding:8px 16px;background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--text2);text-decoration:none;font-size:13px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--primary2)';this.style.color='var(--primary2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">← 返回首页</a>
     </div>
   </div>
 
@@ -236,6 +236,16 @@ function manualAdd() {
     }
   });
 }
+
+
+(function(){
+  var isGH = location.hostname.includes("github.io");
+  if(isGH){
+    var base = location.pathname.replace(/\/[^/]*$/, "");
+    var link = document.getElementById("backLink");
+    if(link) link.href = base + "/";
+  }
+})();
 
 // Auto-login if key saved
 (function () {

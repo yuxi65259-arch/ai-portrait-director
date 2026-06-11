@@ -1,13 +1,14 @@
 """AI写真提示词导演 — FastAPI 入口"""
+from __future__ import annotations
 import os, sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-from fastapi import FastAPI, File, UploadFile, Form, Body
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import validate_config, DEEPSEEK_API_KEY, OPENAI_API_KEY
-from models import PromptRequest, PromptResponse, ImageResponse, ErrorResponse
+from models import PromptRequest, PromptResponse, ImageRequest, ImageResponse, ErrorResponse
 from models_config import PROMPT_MODELS, IMAGE_MODELS, DEFAULT_PROMPT_MODEL, DEFAULT_IMAGE_MODEL
 from prompt_engine import generate_prompt
 from image_generator import generate_image
@@ -105,7 +106,7 @@ async def api_generate_prompt(request: PromptRequest):
 
 # ── 步骤2a：生图 JSON 接口 ──
 @app.post("/api/generate-image", response_model=ImageResponse)
-async def api_generate_image_json(payload: ImageRequest = Body(...)):
+async def api_generate_image_json(payload: ImageRequest):
     try:
         if not OPENAI_API_KEY:
             return JSONResponse(status_code=503, content=ErrorResponse(
@@ -117,7 +118,7 @@ async def api_generate_image_json(payload: ImageRequest = Body(...)):
         ref_bytes = None
         if payload.image:
             import base64
-            b64 = request.image
+            b64 = payload.image
             if "," in b64:
                 b64 = b64.split(",", 1)[1]
             ref_bytes = base64.b64decode(b64)
@@ -126,6 +127,8 @@ async def api_generate_image_json(payload: ImageRequest = Body(...)):
         return ImageResponse(image_url=img["url"], revised_prompt=img.get("revised_prompt", ""))
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         msg = repr(e)
         detail = str(e)[:500]
         code = "OPENAI_ERROR"

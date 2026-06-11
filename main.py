@@ -2,7 +2,7 @@
 import os, sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, Body
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -105,7 +105,7 @@ async def api_generate_prompt(request: PromptRequest):
 
 # ── 步骤2a：生图 JSON 接口 ──
 @app.post("/api/generate-image", response_model=ImageResponse)
-async def api_generate_image_json(body: ImageRequest):
+async def api_generate_image_json(payload: ImageRequest = Body(...)):
     try:
         if not OPENAI_API_KEY:
             return JSONResponse(status_code=503, content=ErrorResponse(
@@ -115,14 +115,14 @@ async def api_generate_image_json(body: ImageRequest):
             ).model_dump())
 
         ref_bytes = None
-        if body.image:
+        if payload.image:
             import base64
             b64 = request.image
             if "," in b64:
                 b64 = b64.split(",", 1)[1]
             ref_bytes = base64.b64decode(b64)
 
-        img = generate_image(prompt=body.prompt, size=body.size, model=body.model, reference_image_bytes=ref_bytes)
+        img = generate_image(prompt=payload.prompt, size=payload.size, model=payload.model, reference_image_bytes=ref_bytes)
         return ImageResponse(image_url=img["url"], revised_prompt=img.get("revised_prompt", ""))
 
     except Exception as e:

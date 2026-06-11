@@ -242,7 +242,9 @@ function fillSelect(el,models,defId){
 fillSelect($('promptModel'),promptModels,'deepseek-chat');
 fillSelect($('imageModel'),imageModels,'gpt-image-2');
 
-// ── State ──
+// ── State (with localStorage persistence) ──
+function savePref(k,v){try{localStorage.setItem('px_'+k,JSON.stringify(v))}catch(e){}}
+function loadPref(k,def){try{const v=localStorage.getItem('px_'+k);return v!==null?JSON.parse(v):def}catch(e){return def}}
 const state={category:null,subStyle:null,loading:false,pendingPrompt:null};
 const subStyles={
   '个人写真':['清新日系','黑白情绪','法式慵懒','都市简约','胶片复古','韩系奶油','男友视角','居家随拍','光影切割','港风霓虹','日杂模特','清冷破碎'],
@@ -252,23 +254,52 @@ const subStyles={
   'COS写真':['二次元动漫','游戏角色','古风仙侠','蒸汽朋克','克苏鲁/暗黑奇幻','特摄/超级英雄','赛博忍者','神话众神','洛丽塔/哥特','铠甲骑士','狐妖/妖怪','科幻机甲'],
 };
 
-// ── Category ──
-$('catGrid').addEventListener('click',e=>{
-  const b=e.target.closest('.cat-btn');if(!b)return;
-  state.category=b.dataset.cat;state.subStyle=null;
-  document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
+function renderSubStyles(cat, selected){
   const sg=$('subGrid');sg.innerHTML='';sg.classList.remove('show');
-  if(subStyles[state.category]){
-    subStyles[state.category].forEach(s=>{
+  if(subStyles[cat]){
+    subStyles[cat].forEach(s=>{
       const el=document.createElement('button');el.className='sub-btn';el.textContent=s;
-      el.onclick=()=>{state.subStyle=s;sg.querySelectorAll('.sub-btn').forEach(x=>x.classList.remove('active'));el.classList.add('active');};
+      if(s===selected) el.classList.add('active');
+      el.onclick=()=>{state.subStyle=s;savePref('subStyle',s);sg.querySelectorAll('.sub-btn').forEach(x=>x.classList.remove('active'));el.classList.add('active');};
       sg.appendChild(el);
     });
     sg.classList.add('show');
   }
+}
+
+// ── Category ──
+$('catGrid').addEventListener('click',e=>{
+  const b=e.target.closest('.cat-btn');if(!b)return;
+  state.category=b.dataset.cat;state.subStyle=null;
+  savePref('category',state.category);savePref('subStyle',null);
+  document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  renderSubStyles(state.category, null);
   $('promptBtn').disabled=false;
 });
+
+$('prefInput').addEventListener('input',()=>savePref('pref',$('prefInput').value));
+$('promptModel').addEventListener('change',()=>savePref('pmodel',$('promptModel').value));
+$('imageModel').addEventListener('change',()=>savePref('imodel',$('imageModel').value));
+$('sizeSelect').addEventListener('change',()=>savePref('isize',$('sizeSelect').value));
+
+// ── Restore saved state on load ──
+(function restoreState(){
+  const cat=loadPref('category',null);
+  if(!cat) return;
+  state.category=cat;
+  const btn=document.querySelector('[data-cat="'+cat+'"]');
+  if(btn){btn.classList.add('active');$('promptBtn').disabled=false}
+  const sub=loadPref('subStyle',null);
+  if(sub){state.subStyle=sub}
+  renderSubStyles(cat, sub);
+  $('prefInput').value=loadPref('pref','');
+  setTimeout(()=>{  // wait for fillSelect to populate
+    const pm=loadPref('pmodel',null);if(pm)$('promptModel').value=pm;
+    const im=loadPref('imodel',null);if(im)$('imageModel').value=im;
+    const is=loadPref('isize',null);if(is)$('sizeSelect').value=is;
+  },100);
+})();
 
 // ── Prompt Generation ──
 $('promptBtn').addEventListener('click',async()=>{

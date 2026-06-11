@@ -1,24 +1,72 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>API Test</title></head>
-<body>
-<h3>API 连通性测试</h3>
-<button onclick="test()">测试 DeepSeek API</button>
-<pre id="out"></pre>
+<html><head><meta charset="UTF-8"><title>API Test</title>
+<style>body{font-family:sans-serif;padding:20px}button{padding:12px 24px;font-size:16px;margin:5px}pre{background:#f4f4f4;padding:15px;border-radius:8px;white-space:pre-wrap;word-break:break-all}</style>
+</head><body>
+<h2>API 诊断测试</h2>
+
+<p><b>测试1：最小请求（无 system prompt）</b></p>
+<button onclick="test1()">运行</button>
+<pre id="r1"></pre>
+
+<p><b>测试2：带 system prompt（从主页面复制）</b></p>
+<button onclick="test2()">运行</button>
+<pre id="r2"></pre>
+
+<p><b>测试3：检查浏览器环境</b></p>
+<button onclick="test3()">运行</button>
+<pre id="r3"></pre>
+
 <script>
-const $=id=>document.getElementById(id);
-async function test(){
-  $('out').textContent='Testing...';
+const KEY='sk-0fe9505332be4b408cb9030a97d7a199';
+const BASE='https://api.deepseek.com';
+
+async function call(msg){
+  const r=await fetch(BASE+'/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEY},
+    body:JSON.stringify({model:'deepseek-chat',messages:msg,temperature:0.85,max_tokens:50})
+  });
+  const t=await r.text();
+  return r.ok?JSON.parse(t).choices[0].message.content:'FAIL: '+t.slice(0,500);
+}
+
+async function test1(){
+  document.getElementById('r1').textContent='Running...';
   try{
-    const res=await fetch('https://api.deepseek.com/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer sk-0fe9505332be4b408cb9030a97d7a199'},
-      body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:'say hi'}],max_tokens:20})
-    });
-    const d=await res.json();
-    $('out').textContent=res.ok?'OK: '+d.choices[0].message.content:'FAIL: '+JSON.stringify(d,null,2);
+    const r=await call([{role:'user',content:'用中文说"你好世界"'}]);
+    document.getElementById('r1').textContent=r;
   }catch(e){
-    $('out').textContent='NETWORK ERROR: '+e.message+'\n\nThis means your browser or network is blocking the request to api.deepseek.com';
+    document.getElementById('r1').textContent='ERROR: '+e.message;
   }
+}
+
+async function test2(){
+  document.getElementById('r2').textContent='Running...';
+  try{
+    // Load the main page and extract its SYSTEM_PROMPT
+    const mainPage=await fetch('index.html');
+    const html=await mainPage.text();
+    const start=html.indexOf('SYSTEM_PROMPT=`')+'SYSTEM_PROMPT=`'.length;
+    const end=html.indexOf('`;',start);
+    const sp=html.slice(start,end);
+    document.getElementById('r2').textContent='SP loaded: '+sp.length+' chars. Calling API...';
+    const r=await call([{role:'system',content:sp},{role:'user',content:'类别：个人写真\\n子风格：港风霓虹'}]);
+    document.getElementById('r2').textContent=r;
+  }catch(e){
+    document.getElementById('r2').textContent='ERROR: '+e.message;
+  }
+}
+
+async function test3(){
+  const info={
+    userAgent:navigator.userAgent,
+    language:navigator.language,
+    cookiesEnabled:navigator.cookieEnabled,
+    onLine:navigator.onLine,
+    fetchSupport:typeof fetch!=='undefined',
+    jsonStringify:typeof JSON.stringify==='function',
+  };
+  document.getElementById('r3').textContent=JSON.stringify(info,null,2);
 }
 </script>
 </body></html>

@@ -189,6 +189,8 @@ select{padding:8px 12px;border-radius:12px;border:1.5px solid #e2e8f0;font-size:
 </div>
 
 <script>
+const $=id=>document.getElementById(id);
+
 // ── API Keys ──
 function getDS(){return localStorage.getItem('ds_key')||'sk-0fe9505332be4b408cb9030a97d7a199'}
 function getGW(){return localStorage.getItem('gw_key')||'sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry'}
@@ -249,7 +251,6 @@ const subStyles={
   '创意/概念写真':['童话幻想','复古时代','超现实','戏剧舞台','末日废土','赛博朋克','水下雨林','敦煌飞天','异形生物','破碎娃娃','未来战士','蝴蝶标本'],
   'COS写真':['二次元动漫','游戏角色','古风仙侠','蒸汽朋克','克苏鲁/暗黑奇幻','特摄/超级英雄','赛博忍者','神话众神','洛丽塔/哥特','铠甲骑士','狐妖/妖怪','科幻机甲'],
 };
-const $=id=>document.getElementById(id);
 
 // ── Category ──
 $('catGrid').addEventListener('click',e=>{

@@ -701,7 +701,7 @@ const LS=(k,v)=>{
 };
 
 // ── API Keys ──
-function getDS(){return LS('ds_key')||'sk-0fe9505332be4b408cb9030a97d7a199'}
+function getDS(){try{return LS('ds_key')||'sk-0fe9505332be4b408cb9030a97d7a199'}catch(e){console.error('getDS error',e);return''}}
 function getGW(){return LS('gw_key')||'sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry'}
 function getGWBase(){return LS('gw_base')||'https://api.geeknow.ai/v1'}
 function updateStatus(){
@@ -755,8 +755,14 @@ const imageMd=[{id:'gemini-2.5-flash-image',n:'Gemini Flash Image'},{id:'gpt-ima
 function fillSel(el,md,defId){
   md.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.n;if(m.id===defId)o.selected=true;el.appendChild(o)});
 }
-fillSel($('promptModel'),promptMd,'deepseek-chat');
-fillSel($('imageModel'),imageMd,'gemini-2.5-flash-image');
+document.addEventListener('DOMContentLoaded',function(){
+  var pm=document.getElementById('promptModel');
+  var im=document.getElementById('imageModel');
+  if(!pm||!im){console.error('Select elements not found!');return;}
+  fillSel(pm,promptMd,'deepseek-chat');
+  fillSel(im,imageMd,'gemini-2.5-flash-image');
+  console.log('Models loaded OK');
+});
 
 // ── State ──
 const state={category:null,subStyle:null,loading:false,pendingPrompt:null};
@@ -814,7 +820,7 @@ $('sizeSelect').addEventListener('change',()=>LS('isz',$('sizeSelect').value));
     const im=LS('im');if(im)$('imageModel').value=im;
     const isz=LS('isz');if(isz)$('sizeSelect').value=isz;
   },100);
-})();
+},200);
 
 // ── Prompt Generation ──
 $('promptBtn').addEventListener('click',async()=>{

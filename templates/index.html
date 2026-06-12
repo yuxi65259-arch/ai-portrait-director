@@ -420,7 +420,7 @@ body {
   margin-bottom: 8px;
 }
 .prompt-box 
-.p-edit {
+.p-edit {width:100%;min-height:120px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:inherit;font-size:13px;line-height:1.8;resize:vertical;outline:none;overflow-y:auto;white-space:pre-wrap;word-break:break-word;transition:border-color .2s}.p-edit:hover{border-color:var(--primary2)}.p-edit:focus{border-color:var(--primary);color:var(--text)}
   width: 100%; min-height: 120px; 
   background: var(--surface); color: var(--text2);
   border: 1px solid var(--border); border-radius: 8px;
@@ -659,12 +659,12 @@ body {
 
       <div class="prompt-box">
         <div class="p-title">🌐 中文视觉方案</div>
-        <textarea class="p-content p-edit" id="cnPrompt" placeholder="AI 生成的中文提示词将显示在这里..." readonly></textarea>
+        <textarea class="p-content p-edit" id="cnPrompt" placeholder="AI 生成的中文提示词将显示在这里..." ></textarea>
         <button class="btn-sm edit-btn" data-target="cnPrompt" style="margin-top:8px">✏️ 编辑</button><button class="btn-sm" data-target="cnPrompt" style="margin-top:8px">📋 复制</button>
       </div>
       <div class="prompt-box">
         <div class="p-title">🌍 English Prompt</div>
-        <textarea class="p-content p-edit" id="enPrompt" placeholder="AI 生成的英文提示词将显示在这里..." readonly></textarea>
+        <textarea class="p-content p-edit" id="enPrompt" placeholder="AI 生成的英文提示词将显示在这里..." ></textarea>
         <button class="btn-sm edit-btn" data-target="enPrompt" style="margin-top:8px">✏️ 编辑</button><button class="btn-sm" data-target="enPrompt" style="margin-top:8px">📋 复制</button>
       </div>
       <div id="paramChips" style="margin-top:8px"></div>

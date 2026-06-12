@@ -572,6 +572,28 @@ body {
 </div>
 
 
+
+<div style="text-align:center;margin-top:8px">
+  <button class="btn-ghost" style="font-size:11px;padding:4px 12px" onclick="testAPIConnection()">🔌 测试 API 连接</button>
+  <span id="apiTestResult" style="font-size:11px;color:var(--text2);margin-left:8px"></span>
+</div>
+<script>
+async function testAPIConnection(){
+  var el=document.getElementById("apiTestResult");
+  el.textContent="测试中...";
+  el.style.color="var(--text2)";
+  try{
+    var r=await fetch("https://api.geeknow.ai/v1/images/generations",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry"},
+      body:JSON.stringify({model:"gpt-image-2",prompt:"a red apple","size":"1024x1024","n":1})
+    });
+    if(r.ok){var d=await r.json();el.textContent="API 连接正常 ✓";el.style.color="#10b981"}
+    else{el.textContent="API 错误: "+r.status;el.style.color="#ef4444"}
+  }catch(e){el.textContent="连接失败: "+e.message;el.style.color="#ef4444"}
+}
+</script>
+
 <!-- Tab Bar -->
 <div class="tab-bar" id="tabBar">
   <div class="tab-item active" data-tab="0" id="tab0">

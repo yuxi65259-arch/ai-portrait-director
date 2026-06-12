@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Debug</title>
+<style>
+body{background:#0f0f1a;color:#e2e8f0;font-family:sans-serif;padding:20px}
+pre{background:#1a1a2e;padding:10px;border-radius:8px;white-space:pre-wrap}
+.pass{color:#10b981}.fail{color:#ef4444}
+</style></head><body>
+<h2>Model Selection Debug</h2>
+<select id="testSelect"></select>
+<pre id="log"></pre>
+
+<script>
+// MINIMAL version of our model fill code
+const $=id=>document.getElementById(id);
+const promptMd=[{id:'deepseek-chat',n:'DeepSeek'},{id:'gemini-3-pro-preview',n:'Gemini 3 Pro'}];
+const imageMd=[{id:'gpt-image-2',n:'GPT-Image-2'},{id:'gemini-2.5-flash-image',n:'Gemini Flash'}];
+
+function fillSel(el,md,defId){
+  console.log('fillSel called', el, md);
+  if(!el){log('FAIL: select element is null');return;}
+  md.forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.id;o.textContent=m.n;
+    if(m.id===defId)o.selected=true;
+    el.appendChild(o);
+  });
+  log('PASS: filled '+el.id+' with '+md.length+' options');
+}
+
+function log(msg){document.getElementById('log').textContent+=msg+'\n'}
+
+// Test 1: Direct fill
+log('Test 1: Direct fill');
+fillSel($('testSelect'),promptMd,'deepseek-chat');
+log('Options count: '+$('testSelect').options.length);
+log($('testSelect').options.length===3 ? 'PASS' : 'FAIL');
+
+// Test 2: DOMContentLoaded
+log('\nTest 2: DOMContentLoaded');
+document.addEventListener('DOMContentLoaded',()=>{
+  log('DOMContentLoaded fired');
+  log('testSelect exists: '+($('testSelect')!==null));
+});
+</script>
+</body></html>

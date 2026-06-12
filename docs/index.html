@@ -901,7 +901,7 @@ $('imageBtn').addEventListener('click',async()=>{
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');
     updateLsStep(3,true);
-    var imgUrl=d.data[0].url;$('resultImg').src=imgUrl;$('resultImg').style.display='block';var fb=document.getElementById('imgFallback');if(fb)fb.style.display='none';$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
+    var genImgUrl=d.data[0].url;$('resultImg').src=genImgUrl;$('resultImg').style.display='block';var fb=document.getElementById('imgFallback');if(fb)fb.style.display='none';$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
     $('imageResult').scrollIntoView({behavior:'smooth'});
   }catch(e){showErr(e.message)}finally{state.loading=false;hideLoader()}
 });

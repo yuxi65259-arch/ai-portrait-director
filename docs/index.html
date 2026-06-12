@@ -125,30 +125,54 @@ function save(){LS('convs',S.convs)}
 function load(){S.convs=LS('convs')||[];S.activeId=S.convs.length?S.convs[0].id:null}
 
 function render(){
-  var cl=$('convList'),h='';S.convs.forEach(function(c){h+='<div class="conv-item'+(c.id===S.activeId?' active':'')+'" onclick="switchConv(\\''+c.id+'\\')"><span style=\"overflow:hidden;text-overflow:ellipsis\">'+esc(c.title||'新建对话')+'</span><span class=\"del\" onclick=\"event.stopPropagation();if(confirm(\\'删除对话？\\'))delConv(\\''+c.id+'\\')\">×</span></div>'});cl.innerHTML=h;
+  var cl=$('convList');cl.innerHTML='';S.convs.forEach(function(c){
+    var d=document.createElement('div');d.className='conv-item'+(c.id===S.activeId?' active':'');
+    d.onclick=function(){switchConv(c.id)};
+    var s=document.createElement('span');s.style.overflow='hidden';s.style.textOverflow='ellipsis';s.textContent=c.title||'新建对话';
+    d.appendChild(s);
+    var del=document.createElement('span');del.className='del';del.textContent='×';
+    del.onclick=function(e){e.stopPropagation();if(confirm('删除对话？'))delConv(c.id)};
+    d.appendChild(del);
+    cl.appendChild(d);
+  });
   var cv=curConv();$('convTitle').textContent=cv?cv.title:'新建对话';
   var ca=$('chat');
   if(!cv||!cv.msgs.length){ca.innerHTML='<div class="chat-welcome"><h2>AI 写真创作工坊</h2><p>用自然语言描述你想要的写真效果</p><p style="font-size:12px;color:var(--text2)">示例：女生毕业照，校园草坪，阳光明媚，穿着学士服</p></div>';return}
-  var html='';cv.msgs.forEach(function(m,i){html+=renderMsg(m,i)});ca.innerHTML=html;ca.scrollTop=ca.scrollHeight}
-
-function renderMsg(m,idx){
-  if(m.role==='user')return '<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-bubble"><div class="msg-content">'+esc(m.content)+'</div></div></div>';
-  var h='<div class="msg ai"><div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="msg-content">'+esc(m.content)+'</div>';
+  ca.innerHTML='';cv.msgs.forEach(function(m,i){var el=renderMsg(m,i);if(el)ca.appendChild(el)});
+  ca.scrollTop=ca.scrollHeight;
+}function renderMsg(m,idx){
+  if(m.role==='user'){var d=document.createElement('div');d.className='msg user';d.innerHTML='<div class="msg-avatar">👤</div><div class="msg-bubble"><div class="msg-content">'+esc(m.content)+'</div></div>';return d}
+  var d=document.createElement('div');d.className='msg ai';
+  d.innerHTML='<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="msg-content">'+esc(m.content)+'</div></div>';
+  var bubble=d.querySelector('.msg-bubble');
   if(m.prompt){
-    h+='<details class="prompt-box"><summary>查看提示词</summary>';
-    ['scene','action','expression','lighting','tone','composition','cn','en'].forEach(function(k){if(m.prompt[k])h+='<div class="fld"><div class="fl">'+k+'</div><div class="fv">'+esc(m.prompt[k])+'</div></div>'});
-    h+='</details>';
+    var det=document.createElement('details');det.className='prompt-box';
+    var sum=document.createElement('summary');sum.textContent='查看提示词';det.appendChild(sum);
+    var keys=['scene','action','expression','lighting','tone','composition','cn','en'];
+    keys.forEach(function(k){if(m.prompt[k]){var fld=document.createElement('div');fld.className='fld';fld.innerHTML='<div class="fl">'+k+'</div><div class="fv">'+esc(m.prompt[k])+'</div>';det.appendChild(fld)}});
+    bubble.appendChild(det);
   }
   if(m.images&&m.images.length){
-    h+='<div class="img-grid">';
-    m.images.forEach(function(url,i){h+='<div class="img-card"><img src="'+url+'" onclick="viewImg(\\''+url+'\\')"><div class="img-actions"><button class="img-btn" onclick="event.stopPropagation();downloadImg(\\''+url+'\\')">下载</button><button class="img-btn" onclick="event.stopPropagation();useRef('+idx+','+i+')">参考</button></div></div>'});
-    h+='</div>';
+    var grid=document.createElement('div');grid.className='img-grid';
+    m.images.forEach(function(url,i){
+      var card=document.createElement('div');card.className='img-card';
+      var img=document.createElement('img');img.src=url;img.onclick=function(){viewImg(url)};
+      card.appendChild(img);
+      var acts=document.createElement('div');acts.className='img-actions';
+      var dbtn=document.createElement('button');dbtn.className='img-btn';dbtn.textContent='下载';dbtn.onclick=function(e){e.stopPropagation();downloadImg(url)};
+      var rbtn=document.createElement('button');rbtn.className='img-btn';rbtn.textContent='参考';rbtn.onclick=function(e){e.stopPropagation();useRef(idx,i)};
+      acts.appendChild(dbtn);acts.appendChild(rbtn);
+      card.appendChild(acts);grid.appendChild(card);
+    });
+    bubble.appendChild(grid);
   }
-  h+='<div class="msg-meta">'+new Date(m.ts).toLocaleTimeString()+' · <button onclick="retry('+idx+')">重新生成</button></div></div></div>';
-  return h;
-}
-
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  var meta=document.createElement('div');meta.className='msg-meta';
+  meta.innerHTML=new Date(m.ts).toLocaleTimeString()+' · ';
+  var retryBtn=document.createElement('button');retryBtn.textContent='重新生成';retryBtn.onclick=function(){retry(idx)};
+  meta.appendChild(retryBtn);
+  bubble.appendChild(meta);
+  return d;
+}function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 // ── Send ──
 async function send(){

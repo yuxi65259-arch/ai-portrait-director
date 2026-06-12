@@ -1010,6 +1010,15 @@ function regenerateImg(){
 
 // ── Reference ──
 function previewRef(i){const f=i.files[0];if(!f)return;$('refName').textContent=f.name;$('refClear').style.display='';$('uploadZone').classList.add('has-file');const r=new FileReader();r.onload=e=>{$('refPreview').src=e.target.result;$('refPreview').classList.add('show')};r.readAsDataURL(f)}
+
+// Drag & drop
+var uz=document.getElementById('uploadZone');
+if(uz){
+  uz.addEventListener('dragover',function(e){e.preventDefault();uz.style.borderColor='var(--primary)'});
+  uz.addEventListener('dragleave',function(e){e.preventDefault();uz.style.borderColor=uz.classList.contains('has-file')?'var(--accent)':''});
+  uz.addEventListener('drop',function(e){e.preventDefault();uz.style.borderColor='';var f=e.dataTransfer.files[0];if(f){document.getElementById('refUpload').files=e.dataTransfer.files;previewRef({files:[f]})}});
+}
+
 function clearRef(){$('refUpload').value='';$('refName').textContent='';$('refClear').style.display='none';$('refPreview').classList.remove('show');$('uploadZone').classList.remove('has-file')}
 
 // ── System Prompt ──

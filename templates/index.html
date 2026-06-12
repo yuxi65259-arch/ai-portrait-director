@@ -930,6 +930,7 @@ function showPrompt(d){
 
 // ── Image Generation ──
 $('imageBtn').addEventListener('click',async()=>{
+  console.log('[IMG] Starting image generation...');
   if(state.loading||!state.pendingPrompt||!getGW()){alert('请设置代理 API Key');toggleSettings();return}
   state.loading=true;hideErr();showLoader('生成图片中...');updateLsStep(1,true);updateLsStep(2,true);updateLsStep(3);
   try{
@@ -943,9 +944,10 @@ $('imageBtn').addEventListener('click',async()=>{
       body=JSON.stringify({model,prompt:($('enPrompt').value||(($('enPrompt').value||(curTab().prompt||{}).en))),size:$('sizeSelect').value,n:1});
     }
     const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+  console.log('[IMG] Local:',isLocal,'Model:',model,'Prompt length:',($('enPrompt').value||(curTab().prompt||{}).en||'').length);
     const imgUrl=isLocal?'/api/generate-image':(getGWBase()+'/images/generations');
     const headers={'Content-Type':'application/json'};if(!isLocal){headers['Authorization']='Bearer '+getGW()}
-    const res=await fetch(imgUrl,{method:'POST',headers,body}).catch(e=>{throw new Error('网络失败: '+(e.message||''))});
+    const res=await fetch(imgUrl,{method:'POST',headers,body}).catch(e=>{console.error('[IMG] Fetch error:',e);throw new Error('网络请求失败: '+(e.message||'请检查后端是否启动'))});
     if(!res.ok){const t=await res.text().catch(()=>'');let m;try{m=JSON.parse(t).error?.message||JSON.parse(t).error||t.slice(0,200)}catch{m=t.slice(0,200)}throw new Error(m||'HTTP '+res.status)}
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');

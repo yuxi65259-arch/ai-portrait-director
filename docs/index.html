@@ -944,7 +944,7 @@ $('imageBtn').addEventListener('click',async()=>{
     }
     const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
     const imgUrl=isLocal?'/api/generate-image':(getGWBase()+'/images/generations');
-    const headers=isLocal?{}:{'Content-Type':'application/json','Authorization':'Bearer '+getGW()};
+    const headers={'Content-Type':'application/json'};if(!isLocal){headers['Authorization']='Bearer '+getGW()}
     const res=await fetch(imgUrl,{method:'POST',headers,body}).catch(e=>{throw new Error('网络失败: '+(e.message||''))});
     if(!res.ok){const t=await res.text().catch(()=>'');let m;try{m=JSON.parse(t).error?.message||JSON.parse(t).error||t.slice(0,200)}catch{m=t.slice(0,200)}throw new Error(m||'HTTP '+res.status)}
     const d=await res.json();

@@ -764,7 +764,7 @@ function saveSettings(){
 loadCredits();
 }
 function creditKey(){try{return localStorage.getItem('user_key')||getGW()}catch(e){return getGW()}}
-async function loadCredits(){if(location.hostname==='yuxi65259-arch.github.io')return;
+async function loadCredits(){if(location.hostname.indexOf('github.io')>=0)return;if(location.hostname==='yuxi65259-arch.github.io')return;
   const key=creditKey();const el=document.getElementById('creditBal');if(!key||!el)return;
   try{
     const r=await fetch('/api/auth/me',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key})});
@@ -852,24 +852,13 @@ $('sizeSelect').addEventListener('change',()=>{var ts=curTab();if(ts){ts.isz=$('
 
 // Restore saved state
 (function(){
-  const lastP=LS('lastPrompt');
-  if(lastP){
-    state.pendingPrompt=lastP;
-    showPrompt(lastP);
-  }
-  const cat=LS('category');if(!cat)return;
-  state.category=cat;
-  const btn=document.querySelector('[data-cat="'+cat+'"]');
-  if(btn){btn.classList.add('active');$('promptBtn').disabled=false}
-  const sub=LS('subStyle');if(sub)state.subStyle=sub;
-  renderSubs(cat,sub);
-  $('prefInput').value=LS('pref')||'';
-  setTimeout(()=>{
-    const pm=LS('pm');if(pm)$('promptModel').value=pm;
-    const im=LS('im');if(im)$('imageModel').value=im;
-    const isz=LS('isz');if(isz)$('sizeSelect').value=isz;
-  },100);
-},200);
+  var at=parseInt(localStorage.getItem('px_activetab'));
+  if(isNaN(at))at=0;
+  state.activeTab=at;
+  tabs();
+  renderTabs();
+  restoreTabUI();
+})();
 
 // ── Prompt Generation ──
 $('promptBtn').addEventListener('click',async()=>{

@@ -662,7 +662,7 @@ body {
       </div>
       <div class="result-layout">
         <div class="result-image-wrap">
-          <img id="resultImg" src="" alt="AI 生成写真" crossorigin="anonymous">
+          <img id="resultImg" src="" alt="AI 生成写真" crossorigin="anonymous" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div id="imgFallback" style="display:none;padding:40px;text-align:center;color:var(--text2);background:var(--surface2);border-radius:12px"><div style="font-size:40px;margin-bottom:12px">🖼️</div><p>图片链接已过期</p><p style="font-size:12px;margin-top:4px">CDN 临时链接有效期为 1 小时</p><button class="btn-ghost" style="margin-top:12px" onclick="regenerateImg()">🔄 重新生成图片</button></div>
         </div>
         <div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -859,7 +859,7 @@ function parseRaw(text){
 }
 
 function showPrompt(d){
-  state.pendingPrompt=d;LS('lastPrompt',d);saveHistory(d);
+  state.pendingPrompt=d;LS('lastPrompt',d);
   const fields={boxScene:d.scene,boxAction:d.action,boxExpression:d.expression,boxLighting:d.lighting,boxTone:d.tone,boxComposition:d.composition};
   Object.entries(fields).forEach(([id,val])=>{
     const el=$(id);if(el&&val){if(el){const ta=el.querySelector('.s-text');if(ta){ta.value=val||'';el.style.display=''}}}else if(el)el.style.display='none'
@@ -893,7 +893,7 @@ $('imageBtn').addEventListener('click',async()=>{
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');
     updateLsStep(3,true);
-    $('resultImg').src=d.data[0].url;$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
+    var imgUrl=d.data[0].url;$('resultImg').src=imgUrl;$('resultImg').style.display='block';var fb=document.getElementById('imgFallback');if(fb)fb.style.display='none';$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
     $('imageResult').scrollIntoView({behavior:'smooth'});
   }catch(e){showErr(e.message)}finally{state.loading=false;hideLoader()}
 });
@@ -940,7 +940,7 @@ function loadHistory(i){
   state.category=item.cat;state.subStyle=item.sub;
   LS('category',item.cat);LS('subStyle',item.sub);
   const d={scene:item.scene,action:item.action,expression:item.expression,lighting:item.lighting,tone:item.tone,composition:item.composition,cn:item.cnFull||item.cn,en:item.en,sub:item.sub,params:item.params||{},imgUrl:item.imgUrl||''};
-  state.pendingPrompt=d;LS('lastPrompt',d);saveHistory(d);
+  state.pendingPrompt=d;LS('lastPrompt',d);
   showPrompt(d);toggleHistory();
 }
 function toggleHistory(){
@@ -949,6 +949,15 @@ function toggleHistory(){
 }
 function clearHistory(){if(confirm('确定清空所有历史记录？')){LS('history',[]);renderHistory()}}
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').slice(0,100)}
+
+
+function regenerateImg(){
+  const d=state.pendingPrompt;
+  if(!d||!d.en)return;
+  document.getElementById('imgFallback').style.display='none';
+  document.getElementById('resultImg').style.display='block';
+  document.getElementById('imageBtn').click();
+}
 
 // ── Reference ──
 function previewRef(i){const f=i.files[0];if(!f)return;$('refName').textContent=f.name;$('refClear').style.display='';$('uploadZone').classList.add('has-file');const r=new FileReader();r.onload=e=>{$('refPreview').src=e.target.result;$('refPreview').classList.add('show')};r.readAsDataURL(f)}

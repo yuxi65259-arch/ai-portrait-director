@@ -35,6 +35,35 @@ body {
     radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%);
 }
 
+
+/* Tab bar */
+.tab-bar {
+  display: flex; gap: 6px; align-items: center; 
+  padding: 12px 20px; overflow-x: auto;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 40;
+}
+.tab-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); font-size: 12px; cursor: pointer;
+  white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
+}
+.tab-item:hover { border-color: var(--primary2); color: var(--text); }
+.tab-item.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.tab-item .tab-close { font-size: 14px; opacity: 0.5; margin-left: 2px; }
+.tab-item .tab-close:hover { opacity: 1; }
+.tab-add {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: transparent; border: 1px dashed var(--border);
+  color: var(--text2); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.tab-add:hover { border-color: var(--primary2); color: var(--primary2); background: rgba(124,58,237,0.1); }
+.tab-badge { font-size: 9px; padding: 1px 5px; border-radius: 6px; background: rgba(245,158,11,0.2); color: var(--accent); }
+
 /* Hero */
 .hero {
   text-align: center;
@@ -542,6 +571,17 @@ body {
   </div>
 </div>
 
+
+<!-- Tab Bar -->
+<div class="tab-bar" id="tabBar">
+  <div class="tab-item active" data-tab="0" id="tab0">
+    <span class="tab-name">对话 1</span>
+    <span class="tab-close" onclick="event.stopPropagation();closeTab(0)">×</span>
+  </div>
+  <button class="tab-add" onclick="addTab()" title="新建对话">+</button>
+</div>
+
+
 <!-- Hero -->
 <div class="hero">
   <span class="badge">🎬 AI-Powered Photography Director</span>
@@ -724,7 +764,7 @@ function saveSettings(){
 })();
 loadCredits();
 }
-function creditKey(){return LS('user_key')||getGW()}
+function creditKey(){try{return localStorage.getItem('user_key')||getGW()}catch(e){return getGW()}}
 async function loadCredits(){
   const key=creditKey();const el=document.getElementById('creditBal');if(!key||!el)return;
   try{
@@ -766,7 +806,16 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 else{initModels()}
 
 // ── State ──
-const state={category:null,subStyle:null,loading:false,pendingPrompt:null};
+const state={activeTab:0,loading:false};
+function tabs(){var t=LS('tabs');if(!t||!t.length){t=[newTab('对话 1')];LS('tabs',t)}return t}
+function curTab(){var t=tabs();return t[state.activeTab]||t[0]}
+function newTab(name){return{id:Date.now(),name:name||'对话 '+(tabs().length+1),category:null,subStyle:null,pref:'',pmodel:'deepseek-chat',imodel:'gemini-2.5-flash-image',isz:'1024x1024',prompt:null,imgUrl:null,loading:false}}
+function addTab(){var t=tabs();t.push(newTab());LS('tabs',t);state.activeTab=t.length-1;renderTabs();saveCurTab()}
+function switchTab(i){state.activeTab=i;renderTabs();saveCurTab();restoreTabUI()}
+function closeTab(i){var t=tabs();if(t.length<=1)return;t.splice(i,1);LS('tabs',t);if(state.activeTab>=t.length)state.activeTab=t.length-1;renderTabs();saveCurTab();restoreTabUI()}
+function saveCurTab(){LS('activetab',state.activeTab);var t=tabs();LS('tabs',t)}
+function renderTabs(){var el=$('tabBar');if(!el)return;var t=tabs();var h='';t.forEach(function(tb,i){h+='<div class="tab-item'+(i===state.activeTab?' active':'')+'" data-tab="'+i+'" onclick="switchTab('+i+')"><span class="tab-name">'+escapeHtml(tb.name)+'</span>'+(t.length>1?'<span class="tab-close" onclick="event.stopPropagation();closeTab('+i+')">×</span>':'')+'</div>'});h+='<button class="tab-add" onclick="addTab()">+</button>';el.innerHTML=h}
+function restoreTabUI(){var tb=curTab();if(!tb)return;state.category=tb.category;if(tb.category){document.querySelectorAll('#catGrid .pill').forEach(function(x){x.classList.remove('active')});var b=document.querySelector('#catGrid .pill[data-cat="'+tb.category+'"]');if(b){b.classList.add('active');$('promptBtn').disabled=false}renderSubs(tb.category,tb.subStyle)}$('prefInput').value=tb.pref||'';if(tb.prompt){showPromptResult(tb.prompt);if(tb.imgUrl){$('resultImg').src=tb.imgUrl;$('imageResult').classList.add('show')}}else{$('promptResult').classList.remove('show');$('imageResult').classList.remove('show')}setTimeout(function(){$('promptModel').value=tb.pmodel;$('imageModel').value=tb.imodel;$('sizeSelect').value=tb.isz},200)}
 const subStyles={
   '个人写真':['清新日系','黑白情绪','法式慵懒','都市简约','胶片复古','韩系奶油','男友视角','居家随拍','光影切割','港风霓虹','日杂模特','清冷破碎'],
   '婚纱写真':['韩式极简','森系自然','法式庄园','新中式','海边轻纱','城市街拍','电影剧情式','复古胶片','极地冰雪','沙漠风','烟火夜景','花房温室','民国旗袍'],
@@ -781,7 +830,7 @@ function renderSubs(cat,sel){
   subStyles[cat].forEach(s=>{
     const el=document.createElement('button');el.className='sub-pill';el.textContent=s;
     if(s===sel)el.classList.add('active');
-    el.onclick=()=>{state.subStyle=s;LS('subStyle',s);sg.querySelectorAll('.sub-pill').forEach(x=>x.classList.remove('active'));el.classList.add('active');};
+    el.onclick=()=>{state.subStyle=s;var ts=curTab();if(ts){ts.subStyle=s;saveCurTab()}sg.querySelectorAll('.sub-pill').forEach(x=>x.classList.remove('active'));el.classList.add('active');};
     sg.appendChild(el);
   });
 }
@@ -790,17 +839,17 @@ function renderSubs(cat,sel){
 $('catGrid').addEventListener('click',e=>{
   const b=e.target.closest('.pill');if(!b)return;
   state.category=b.dataset.cat;state.subStyle=null;
-  LS('category',state.category);LS('subStyle',null);
+  var tc=curTab();if(tc){tc.category=state.category;tc.subStyle=null;saveCurTab()}
   document.querySelectorAll('#catGrid .pill').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   renderSubs(state.category,null);
   $('promptBtn').disabled=false;
 });
 
-$('prefInput').addEventListener('input',()=>LS('pref',$('prefInput').value));
-$('promptModel').addEventListener('change',()=>LS('pm',$('promptModel').value));
-$('imageModel').addEventListener('change',()=>LS('im',$('imageModel').value));
-$('sizeSelect').addEventListener('change',()=>LS('isz',$('sizeSelect').value));
+$('prefInput').addEventListener('input',()=>var tp=curTab();if(tp){tp.pref=$('prefInput').value;saveCurTab()});
+$('promptModel').addEventListener('change',()=>var tm=curTab();if(tm){tm.pmodel=$('promptModel').value;saveCurTab()});
+$('imageModel').addEventListener('change',()=>var ti=curTab();if(ti){ti.imodel=$('imageModel').value;saveCurTab()});
+$('sizeSelect').addEventListener('change',()=>var ts=curTab();if(ts){ts.isz=$('sizeSelect').value;saveCurTab()});
 
 // Restore saved state
 (function(){
@@ -867,7 +916,7 @@ function parseRaw(text){
 }
 
 function showPrompt(d){
-  state.pendingPrompt=d;LS('lastPrompt',d);
+  var tbs=curTab();if(tbs){tbs.prompt=d;saveCurTab()}LS('lastPrompt',d);
   const fields={boxScene:d.scene,boxAction:d.action,boxExpression:d.expression,boxLighting:d.lighting,boxTone:d.tone,boxComposition:d.composition};
   Object.entries(fields).forEach(([id,val])=>{
     const el=$(id);if(el&&val){if(el){const ta=el.querySelector('.s-text');if(ta){ta.value=val||'';el.style.display=''}}}else if(el)el.style.display='none'
@@ -889,9 +938,9 @@ $('imageBtn').addEventListener('click',async()=>{
     let body;
     if(refF){
       const b64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(refF)});
-      body=JSON.stringify({model,prompt:($('enPrompt').value||state.pendingPrompt.en),image:b64,size:$('sizeSelect').value,n:1});
+      body=JSON.stringify({model,prompt:($('enPrompt').value||(($('enPrompt').value||(curTab().prompt||{}).en))),image:b64,size:$('sizeSelect').value,n:1});
     }else{
-      body=JSON.stringify({model,prompt:($('enPrompt').value||state.pendingPrompt.en),size:$('sizeSelect').value,n:1});
+      body=JSON.stringify({model,prompt:($('enPrompt').value||(($('enPrompt').value||(curTab().prompt||{}).en))),size:$('sizeSelect').value,n:1});
     }
     const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
     const imgUrl=isLocal?'/api/generate-image':(getGWBase()+'/images/generations');
@@ -901,7 +950,7 @@ $('imageBtn').addEventListener('click',async()=>{
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');
     updateLsStep(3,true);
-    var genImgUrl=d.data[0].url;$('resultImg').src=genImgUrl;$('resultImg').style.display='block';var fb=document.getElementById('imgFallback');if(fb)fb.style.display='none';$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
+    var genImgUrl=d.data[0].url;$('resultImg').src=genImgUrl;var tbi=curTab();if(tbi){tbi.imgUrl=genImgUrl;saveCurTab()}$('resultImg').style.display='block';var fb=document.getElementById('imgFallback');if(fb)fb.style.display='none';$('imageResult').classList.add('show');loadCredits();LS('lastImage',d.data[0].url);if(state.pendingPrompt){state.pendingPrompt.imgUrl=d.data[0].url;LS('lastPrompt',state.pendingPrompt);let h=LS('history')||[];if(h.length){h[0].imgUrl=d.data[0].url;LS('history',h)}}
     $('imageResult').scrollIntoView({behavior:'smooth'});
   }catch(e){showErr(e.message)}finally{state.loading=false;hideLoader()}
 });
@@ -948,7 +997,7 @@ function loadHistory(i){
   state.category=item.cat;state.subStyle=item.sub;
   LS('category',item.cat);LS('subStyle',item.sub);
   const d={scene:item.scene,action:item.action,expression:item.expression,lighting:item.lighting,tone:item.tone,composition:item.composition,cn:item.cnFull||item.cn,en:item.en,sub:item.sub,params:item.params||{},imgUrl:item.imgUrl||''};
-  state.pendingPrompt=d;LS('lastPrompt',d);
+  var tbs=curTab();if(tbs){tbs.prompt=d;saveCurTab()}LS('lastPrompt',d);
   showPrompt(d);toggleHistory();
 }
 function toggleHistory(){

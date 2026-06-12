@@ -1009,7 +1009,7 @@ function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 
 
 function regenerateImg(){
-  const d=state.pendingPrompt;
+  var d=state.pendingPrompt||(curTab().prompt);
   if(!d||!d.en)return;
   document.getElementById('imgFallback').style.display='none';
   document.getElementById('resultImg').style.display='block';

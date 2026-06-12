@@ -915,6 +915,7 @@ function parseRaw(text){
 }
 
 function showPrompt(d){
+  state.pendingPrompt=d;
   var tbs=curTab();if(tbs){tbs.prompt=d;saveCurTab()}LS('lastPrompt',d);
   const fields={boxScene:d.scene,boxAction:d.action,boxExpression:d.expression,boxLighting:d.lighting,boxTone:d.tone,boxComposition:d.composition};
   Object.entries(fields).forEach(([id,val])=>{

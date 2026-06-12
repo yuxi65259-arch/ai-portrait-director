@@ -746,9 +746,8 @@ function getDS(){try{return LS('ds_key')||'sk-0fe9505332be4b408cb9030a97d7a199'}
 function getGW(){return LS('gw_key')||'sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry'}
 function getGWBase(){return LS('gw_base')||'https://api.geeknow.ai/v1'}
 function updateStatus(){
-  const ds=!!getDS(),gw=!!getGW(),ok=ds&&gw;
-  $('statusDot').className='status-dot '+(ok?'ok':'warn');
-  $('statusText').textContent=ok?'API 就绪':(ds||gw?'部分 Key 已设置':'请设置 API Key');
+  $('statusDot').className='status-dot ok';
+  $('statusText').textContent='API 就绪';
 }
 function saveSettings(){
   LS('ds_key',$('dsKey').value.trim());LS('gw_key',$('gwKey').value.trim());LS('gw_base',$('gwBase').value.trim()||'https://api.geeknow.ai/v1');
@@ -874,7 +873,7 @@ $('sizeSelect').addEventListener('change',()=>{var ts=curTab();if(ts){ts.isz=$('
 
 // ── Prompt Generation ──
 $('promptBtn').addEventListener('click',async()=>{
-  if(state.loading||!getDS()){alert('请设置 DeepSeek API Key');toggleSettings();return}
+  if(state.loading){return}
   state.loading=true;hideErr();showLoader('生成提示词中...');updateLsStep(1);
   try{
     const model=$('promptModel').value;
@@ -931,7 +930,7 @@ function showPrompt(d){
 // ── Image Generation ──
 $('imageBtn').addEventListener('click',async()=>{
   console.log('[IMG] Starting image generation...');
-  if(state.loading||!state.pendingPrompt||!getGW()){alert('请设置代理 API Key');toggleSettings();return}
+  if(state.loading||!state.pendingPrompt){alert('请先生成提示词');return}
   state.loading=true;hideErr();showLoader('生成图片中...');updateLsStep(1,true);updateLsStep(2,true);updateLsStep(3);
   try{
     const model=$('imageModel').value;

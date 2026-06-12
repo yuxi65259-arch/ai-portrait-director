@@ -846,10 +846,10 @@ $('catGrid').addEventListener('click',e=>{
   $('promptBtn').disabled=false;
 });
 
-$('prefInput').addEventListener('input',()=>var tp=curTab();if(tp){tp.pref=$('prefInput').value;saveCurTab()});
-$('promptModel').addEventListener('change',()=>var tm=curTab();if(tm){tm.pmodel=$('promptModel').value;saveCurTab()});
-$('imageModel').addEventListener('change',()=>var ti=curTab();if(ti){ti.imodel=$('imageModel').value;saveCurTab()});
-$('sizeSelect').addEventListener('change',()=>var ts=curTab();if(ts){ts.isz=$('sizeSelect').value;saveCurTab()});
+$('prefInput').addEventListener('input',()=>{var tp=curTab();if(tp){tp.pref=$('prefInput').value;saveCurTab()}});
+$('promptModel').addEventListener('change',()=>{var tm=curTab();if(tm){tm.pmodel=$('promptModel').value;saveCurTab()}});
+$('imageModel').addEventListener('change',()=>{var ti=curTab();if(ti){ti.imodel=$('imageModel').value;saveCurTab()}});
+$('sizeSelect').addEventListener('change',()=>{var ts=curTab();if(ts){ts.isz=$('sizeSelect').value;saveCurTab()}});
 
 // Restore saved state
 (function(){

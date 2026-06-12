@@ -755,14 +755,14 @@ const imageMd=[{id:'gemini-2.5-flash-image',n:'Gemini Flash Image'},{id:'gpt-ima
 function fillSel(el,md,defId){
   md.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.n;if(m.id===defId)o.selected=true;el.appendChild(o)});
 }
-document.addEventListener('DOMContentLoaded',function(){
+function initModels(){
   var pm=document.getElementById('promptModel');
   var im=document.getElementById('imageModel');
-  if(!pm||!im){console.error('Select elements not found!');return;}
-  fillSel(pm,promptMd,'deepseek-chat');
-  fillSel(im,imageMd,'gemini-2.5-flash-image');
-  console.log('Models loaded OK');
-});
+  if(pm){fillSel(pm,promptMd,'deepseek-chat')}
+  if(im){fillSel(im,imageMd,'gemini-2.5-flash-image')}
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initModels)}
+else{initModels()}
 
 // ── State ──
 const state={category:null,subStyle:null,loading:false,pendingPrompt:null};

@@ -197,6 +197,21 @@ body{
 .vw .cx{position:absolute;top:28px;right:28px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#fff;font-size:22px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center}
 .vw .cx:hover{background:rgba(255,255,255,.15);transform:scale(1.1)}
 
+
+.dz{position:relative;width:100%;max-width:400px;min-height:80px;border:3px dashed var(--b2);border-radius:16px;display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;transition:var(--tr);background:var(--s2);text-align:center;justify-content:center}
+.dz:hover,.dz.drag{border-color:var(--p1);background:rgba(124,58,237,.05);box-shadow:0 0 30px rgba(124,58,237,.1)}
+.dz .dico{font-size:28px;flex-shrink:0}
+.dz .dtxt{font-size:13px;color:var(--t2);line-height:1.5}
+.dz .dtxt span{font-size:11px;color:var(--t3)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.dz.has-file{border-style:solid;border-color:var(--gold);padding:8px 14px;min-height:auto;gap:10px}
+.dz.has-file .dico{font-size:20px}
+.dz.has-file .dtxt{font-size:11px}
+.rp-img{width:56px;height:42px;object-fit:cover;border-radius:8px;border:2px solid var(--b1);cursor:pointer;transition:var(--tr)}
+.rp-img:hover{border-color:var(--p2);transform:scale(1.05)}
+.rp-wrap{position:relative;display:inline-block}
+.rp-wrap .rp-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+
 @media(max-width:768px){
   .sb{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);box-shadow:var(--sh)}
   .sb.show{transform:translateX(0)}
@@ -251,12 +266,16 @@ body{
         <button class="cp" data-cat="COS写真">COS写真</button>
       </div>
       <div class="spr" id="sr"></div>
-      <div class="ref-row">
+      <div class="ref-row" style="flex-wrap:wrap;gap:8px">
         <span id="rb"></span>
-        <label for="rf">📷 添加参考图</label>
-        <input type="file" id="rf" accept="image/*" multiple style="display:none" onchange="onRefPick(this)">
-        <span id="ri" style="font-weight:500"></span>
-        <button onclick="clearRefs()" id="rc" style="display:none;background:none;border:2px solid var(--b1);border-radius:10px;color:var(--t2);cursor:pointer;padding:6px 14px;font-size:12px;font-family:var(--ff);font-weight:600">清除</button>
+        <div class="dz" id="dropZone" onclick="document.getElementById('rf').click()">
+          <div class="dico">🖼️</div>
+          <div class="dtxt">拖拽图片到此处<br><span>或点击选择文件</span></div>
+          <input type="file" id="rf" accept="image/*" multiple onchange="onRefPick(this)">
+        </div>
+        <div id="refPreview" style="display:flex;gap:6px;flex-wrap:wrap;max-width:100%"></div>
+        <span id="ri" style="font-weight:500;font-size:12px"></span>
+        <button onclick="clearRefs()" id="rc" style="display:none;background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.3);border-radius:10px;color:#ef4444;cursor:pointer;padding:8px 16px;font-size:12px;font-family:var(--ff);font-weight:700">✕ 清除全部</button>
       </div>
       <div class="ip-row">
         <textarea id="uin" placeholder="描述你想要的写真效果，按 Enter 发送..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
@@ -328,9 +347,12 @@ async function gp(t,prev){
 
 function pp(t){var r={scene:'',action:'',expression:'',lighting:'',tone:'',composition:'',cn:'',en:''};function ex(h){var m=t.match(new RegExp(h+'\\s*[：:]\\s*(.+?)(?=\\n[📷💃😊💡🎨📐🌐🌍]|\\n━━|\\n🎬|$)','su'));return m?m[1].trim():''}r.scene=ex('📷\\s*场景');r.action=ex('💃\\s*动作\\s*/\\s*姿态');r.expression=ex('😊\\s*表情\\s*/\\s*情绪');r.lighting=ex('💡\\s*光线方案');r.tone=ex('🎨\\s*色调\\s*/\\s*影调');r.composition=ex('📐\\s*构图建议');var m=t.match(/🌐.*?视觉方案.*?\n(.+?)(?=\n🌍|\nEnglish|\n━━|$)/su);if(m)r.cn=m[1].trim();m=t.match(/🌍.*?English Prompt.*?\n(.+?)(?=\n━━|\n📝|\n⚠|$)/su);if(m)r.en=m[1].trim();if(!r.cn)r.cn=t.trim();if(!r.en||/[\u4e00-\u9fff]/.test(r.en.slice(0,50)))r.en=t.trim();r.en=r.en.replace(/[【】⚠].*?[：:].*?\n?/g,'').trim();if(r.en.length>900)r.en=r.en.slice(0,900);return r}
 
-var _rf=[];
-function onRefPick(i){_rf=Array.from(i.files).slice(0,6);S.rf=_rf;$('ri').textContent='已选 '+_rf.length+' 张参考图';$('rc').style.display=_rf.length?'':'none'}
-function clearRefs(){_rf=[];S.rf=[];$('ri').textContent='';$('rc').style.display='none';$('rf').value=''}
+var _rf=[];var _maxRefs=6;
+function onRefPick(i){var files=Array.from(i.files);var all=_rf.concat(files);if(all.length>_maxRefs){alert('最多'+_maxRefs+'张参考图');all=all.slice(0,_maxRefs)}_rf=all;S.rf=_rf;renderRefs()}
+function renderRefs(){var c=$('refPreview');c.innerHTML='';_rf.forEach(function(f,i){var r=new FileReader();r.onload=function(e){var w=document.createElement('div');w.className='rp-wrap';w.innerHTML='<img class="rp-img" src="'+e.target.result+'"><button class="rp-x" onclick="removeRef('+i+')">x</button>';c.appendChild(w)};r.readAsDataURL(f)});var dz=$('dropZone');dz.classList.toggle('has-file',_rf.length>0);dz.querySelector('.dtxt').innerHTML=_rf.length?_rf.length+' 张参考图<br><span>点击添加更多</span>':'拖拽图片到此处<br><span>或点击选择文件</span>';$('rc').style.display=_rf.length?'':'none'}
+function removeRef(i){_rf.splice(i,1);S.rf=_rf;renderRefs();if(!_rf.length)clearRefs()}
+function clearRefs(){_rf=[];S.rf=[];$('rf').value='';$('rc').style.display='none';var dz=$('dropZone');dz.classList.remove('has-file');dz.querySelector('.dtxt').innerHTML='拖拽图片到此处<br><span>或点击选择文件</span>';$('refPreview').innerHTML=''}
+
 function toB64(f){return new Promise(function(rs){var r=new FileReader();r.onload=function(){rs(r.result)};r.readAsDataURL(f)})}
 
 async function gi(en,mdl,size,n,ri,lr){
@@ -346,6 +368,11 @@ async function lc(){if(location.hostname.indexOf('github.io')>=0)return;try{var 
 var SYS='你是世界顶级的AI写真提示词导演。根据用户描述，生成专业中英双语写真方案。\n\n核心宪法：\n1. 所有人物默认中国人形象(Chinese/East Asian)，英文 prompt 必须标注 Chinese\n2. 抽象形容词必须转化为具体视觉细节\n3. 根据用户选择的类别（个人写真/婚纱写真/旅拍写真/创意写真/COS写真）自动匹配场景库\n4. 英文 prompt 必须包含电影色彩科学关键词（Kodak/Fujifilm/ARRI）\n\n严格输出格式（标签不可改）：\n📷 场景：{具象化场景描述}\n💃 动作/姿态：{具体动作与身体语言}\n😊 表情/情绪：{面部表情与情绪基调}\n💡 光线方案：{光源类型+方向+效果}\n🎨 色调/影调：{2-3个主色调+1个强调色，冷暖倾向}\n📐 构图建议：{景别+焦段+角度+比例}\n\n🌐 中文视觉方案（完整融合版）\n{流畅自然的电影画面描述，至少150字}\n\n🌍 English Prompt\n{逗号分隔关键词，前5词定调，含 Chinese/East Asian+摄影术语+电影色彩科学}';
 
 load();if(!S.convs.length)newConv();r();lc();
+(function(){var dz=$('dropZone');if(!dz)return;
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag')});
+  dz.addEventListener('dragleave',function(e){e.preventDefault();dz.classList.remove('drag')});
+  dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag');var files=Array.from(e.dataTransfer.files).filter(function(f){return f.type.startsWith('image/')});if(files.length){var all=_rf.concat(files).slice(0,_maxRefs);_rf=all;S.rf=_rf;renderRefs()}});
+})();
 </script>
 </body>
 </html>

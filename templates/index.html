@@ -764,7 +764,7 @@ function saveSettings(){
 loadCredits();
 }
 function creditKey(){try{return localStorage.getItem('user_key')||getGW()}catch(e){return getGW()}}
-async function loadCredits(){
+async function loadCredits(){if(location.hostname==='yuxi65259-arch.github.io')return;
   const key=creditKey();const el=document.getElementById('creditBal');if(!key||!el)return;
   try{
     const r=await fetch('/api/auth/me',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key})});
@@ -806,7 +806,7 @@ else{initModels()}
 
 // ── State ──
 const state={activeTab:0,loading:false};
-var _tabsCache=null;function tabs(){if(!_tabsCache){try{var raw=localStorage.getItem('px_tabs');console.log('LOAD raw:', raw?raw.length:0, 'bytes');_tabsCache=raw?JSON.parse(raw):null;console.log('LOAD parsed:', _tabsCache?._tabsCache?.length||0, 'tabs')}catch(e){console.error('LOAD FAILED:',e);_tabsCache=null}if(!_tabsCache||!_tabsCache.length){console.log('INIT new tab');_tabsCache=[newTab('对话 1')]}}return _tabsCache}
+var _tabsCache=null;function tabs(){if(!_tabsCache){try{var raw=localStorage.getItem('px_tabs');console.log('LOAD raw:', raw?raw.length:0, 'bytes');_tabsCache=raw?JSON.parse(raw):null;console.log('LOAD parsed:', Array.isArray(_tabsCache)?_tabsCache.length:0, 'tabs')}catch(e){console.error('LOAD FAILED:',e);_tabsCache=null}if(!_tabsCache||!_tabsCache.length){console.log('INIT new tab');_tabsCache=[newTab('对话 1')]}}return _tabsCache}
 function curTab(){var t=tabs();return t[state.activeTab]||t[0]}
 function newTab(name){return{id:Date.now(),name:name||'对话 '+(tabs().length+1),category:null,subStyle:null,pref:'',pmodel:'deepseek-chat',imodel:'gemini-2.5-flash-image',isz:'1024x1024',prompt:null,imgUrl:null,loading:false}}
 function addTab(){var oldTab=curTab();if(oldTab){oldTab.pref=$('prefInput').value;oldTab.pmodel=$('promptModel').value;oldTab.imodel=$('imageModel').value;oldTab.isz=$('sizeSelect').value}var t=tabs();t.push(newTab());LS('tabs',t);state.activeTab=t.length-1;renderTabs();saveCurTab()}

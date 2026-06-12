@@ -695,6 +695,7 @@ body {
 <script>
 // ── Utils ──
 const $=id=>document.getElementById(id);
+  try{document.querySelector('.status-bar').insertAdjacentHTML('afterbegin','<span style="font-size:10px;color:#10b981">JS OK</span>')}catch(e){}
 const LS=(k,v)=>{
   if(v===undefined){try{return JSON.parse(localStorage.getItem('px_'+k))}catch{return null}}
   try{localStorage.setItem('px_'+k,JSON.stringify(v))}catch{}

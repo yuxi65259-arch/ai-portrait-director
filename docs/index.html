@@ -3,256 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 写真创作工坊 — 对话式智能写真</title>
+<title>AI 写真 — 智能创作工坊</title>
 <style>
-:root{--bg:#0f0f1a;--surface:#1a1a2e;--surface2:#222240;--primary:#7c3aed;--primary2:#a78bfa;--accent:#f59e0b;--text:#e2e8f0;--text2:#94a3b8;--border:#2d2d4a;--radius:14px}
+:root{
+  --bg:#080810;--surface:#111122;--card:#181830;--hover:#1e1e3a;
+  --p1:#7c3aed;--p2:#a78bfa;--p3:#c4b5fd;
+  --gold:#f59e0b;--gold2:#fbbf24;
+  --t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;
+  --border:#1e1e3e;--radius:16px;--radius-sm:10px;
+  --shadow:0 25px 60px rgba(0,0,0,.5);
+  --transition:0.25s cubic-bezier(0.4,0,0.2,1);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+body{
+  font-family:'Inter',-apple-system,'Noto Sans SC',sans-serif;
+  background:var(--bg);color:var(--t1);height:100vh;overflow:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 0% 0%,rgba(124,58,237,.06),transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%,rgba(245,158,11,.04),transparent);
+}
 .app{display:flex;height:100vh}
-.sidebar{width:280px;min-width:280px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
-.sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.sidebar-header h2{font-size:15px;font-weight:700;flex:1}
-.btn-icon{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s}
-.btn-icon:hover{border-color:var(--primary2);color:var(--primary2);background:rgba(124,58,237,.1)}
-.conv-list{flex:1;overflow-y:auto;padding:8px}
-.conv-item{padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:4px;transition:.2s;font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;display:flex;align-items:center;justify-content:space-between}
-.conv-item:hover{background:var(--surface2)}
-.conv-item.active{background:rgba(124,58,237,.15);color:var(--text);font-weight:600}
-.conv-item .del{font-size:14px;opacity:0;cursor:pointer;color:#ef4444;flex-shrink:0;margin-left:8px}
-.conv-item:hover .del{opacity:1}
-.sidebar-footer{padding:12px;border-top:1px solid var(--border);font-size:11px;color:var(--text2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.sidebar-footer a{color:var(--primary2);text-decoration:none}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.sidebar{width:272px;min-width:272px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform var(--transition)}
+.sidebar-brand{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-brand .logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--p1),#6d28d9);display:flex;align-items:center;justify-content:center;font-size:16px}
+.sidebar-brand h2{font-size:15px;font-weight:700;letter-spacing:-.3px;flex:1}
+.btn-icon{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.btn-icon:hover{border-color:var(--p2);color:var(--p2);background:rgba(124,58,237,.08)}
+.conv-list{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.conv-item{padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:space-between;border:1px solid transparent}
+.conv-item:hover{background:var(--hover);border-color:var(--border)}
+.conv-item.active{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.25);color:var(--t1);font-weight:600}
+.conv-item .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.conv-item .d{font-size:14px;opacity:0;cursor:pointer;color:var(--t3);flex-shrink:0;margin-left:6px;transition:var(--transition);width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.conv-item .d:hover{opacity:1;color:#ef4444;background:rgba(239,68,68,.1)}
+.conv-item:hover .d{opacity:.6}
+.sidebar-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3)}
+.sidebar-foot .dot{width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.4)}
+.sidebar-foot a{color:var(--p2);text-decoration:none;font-weight:500}
+.sidebar-foot a:hover{color:var(--p3)}
+
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
-.main-header{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface)}
-.main-header h3{font-size:14px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.main-header select{padding:6px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;outline:none}
-.chat-area{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px}
-.chat-welcome{text-align:center;color:var(--text2);padding:60px 20px}
-.chat-welcome h2{font-size:24px;background:linear-gradient(135deg,#c4b5fd,#a78bfa,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
-.chat-welcome p{font-size:14px;margin-bottom:4px}
-.msg{display:flex;gap:12px;max-width:88%;animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.main-head{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface)}
+.main-head h3{font-size:14px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main-head .sel{padding:7px 12px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--t2);font-size:12px;font-family:inherit;outline:none;transition:var(--transition);cursor:pointer}
+.main-head .sel:hover{border-color:var(--p2)}
+.main-head .sel:focus{border-color:var(--p1)}
+
+.chat{flex:1;overflow-y:auto;padding:28px;display:flex;flex-direction:column;gap:24px}
+.welcome{text-align:center;padding:80px 20px}
+.welcome .icon{font-size:48px;margin-bottom:16px}
+.welcome h2{font-size:26px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--p3),var(--p2),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.welcome p{font-size:15px;color:var(--t2);line-height:1.6}
+.welcome .sug{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.welcome .s{b{padding:8px 16px;border-radius:20px;background:var(--card);border:1px solid var(--border);color:var(--t2);cursor:pointer;font-size:12px;transition:var(--transition)}
+.welcome .s{b:hover{border-color:var(--p2);color:var(--p2);transform:translateY(-1px)}
+
+.msg{display:flex;gap:14px;max-width:82%;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .msg.user{align-self:flex-end;flex-direction:row-reverse}
 .msg.ai{align-self:flex-start}
-.msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.msg.user .msg-avatar{background:rgba(124,58,237,.2)}
-.msg.ai .msg-avatar{background:rgba(245,158,11,.2)}
-.msg-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.6;max-width:100%;overflow:hidden}
-.msg.user .msg-bubble{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3)}
-.msg-content{color:var(--text);white-space:pre-wrap;word-break:break-word}
-.msg-meta{font-size:10px;color:var(--text2);margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.msg-meta button{background:none;border:none;color:var(--primary2);cursor:pointer;font-size:10px;padding:0}
-.msg-meta button:hover{text-decoration:underline}
-.prompt-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px;max-height:200px;overflow-y:auto}
-.prompt-box summary{font-size:12px;color:var(--primary2);cursor:pointer;font-weight:600;margin-bottom:4px}
-.prompt-box .fld{margin:4px 0}
-.prompt-box .fl{font-size:10px;color:var(--primary2);font-weight:600}
-.prompt-box .fv{font-size:12px;color:var(--text2);line-height:1.5;white-space:pre-wrap}
-.img-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.img-card{position:relative;width:140px;border-radius:8px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:.2s}
-.img-card:hover{border-color:var(--primary)}
-.img-card img{width:100%;display:block;aspect-ratio:1;object-fit:cover}
-.img-actions{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);display:flex;gap:4px;padding:4px;justify-content:center;opacity:0;transition:.2s}
-.img-card:hover .img-actions{opacity:1}
-.img-btn{padding:3px 8px;border-radius:4px;border:none;font-size:10px;cursor:pointer;color:#fff;background:rgba(255,255,255,.2)}
-.img-btn:hover{background:var(--primary)}
-.input-area{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface)}
-.input-row{display:flex;gap:8px;align-items:flex-end}
-.input-row textarea{flex:1;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:13px;resize:none;height:44px;max-height:120px;outline:none;line-height:1.5}
-.input-row textarea:focus{border-color:var(--primary)}
-.send-btn{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#6d28d9);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
-.send-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,58,237,.4)}
-.send-btn:disabled{opacity:.4;cursor:not-allowed}
-.opt-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px;font-size:11px;color:var(--text2)}
-.opt-row label{cursor:pointer;padding:3px 10px;border-radius:6px;border:1px dashed var(--border);transition:.2s;display:flex;align-items:center;gap:4px;font-size:11px}
-.opt-row label:hover{border-color:var(--primary2);color:var(--primary2)}
-.ref-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;background:rgba(245,158,11,.15);color:var(--accent);font-size:10px;font-weight:600}
-.ref-badge button{background:none;border:none;color:inherit;cursor:pointer;font-size:12px;padding:0}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px}
+.ava{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.msg.user .ava{background:linear-gradient(135deg,var(--p1),#6d28d9)}
+.msg.ai .ava{background:linear-gradient(135deg,#92400e,#b45309)}
+.bbl{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;line-height:1.7;max-width:100%;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.msg.user .bbl{background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.2)}
+.mc{color:var(--t1);white-space:pre-wrap;word-break:break-word}
+.mm{font-size:10.5px;color:var(--t3);margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mm button{background:none;border:none;color:var(--p2);cursor:pointer;font-size:10.5px;padding:0;transition:var(--transition)}
+.mm button:hover{color:var(--p3);text-decoration:underline}
+
+.pbox{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-top:12px;max-height:220px;overflow-y:auto}
+.pbox summary{font-size:12px;color:var(--p2);cursor:pointer;font-weight:600;margin-bottom:4px;user-select:none}
+.pbox .fd{margin:4px 0}.pbox .fl{font-size:10px;color:var(--p2);font-weight:600}.pbox .fv{font-size:12px;color:var(--t2);line-height:1.6;white-space:pre-wrap}
+
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.ic{position:relative;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:var(--transition);box-shadow:0 4px 16px rgba(0,0,0,.2);aspect-ratio:1}
+.ic:hover{border-color:var(--p2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,.15)}
+.ic img{width:100%;height:100%;object-fit:cover;display:block}
+.ia{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));display:flex;gap:6px;padding:8px;justify-content:center;opacity:0;transition:var(--transition)}
+.ic:hover .ia{opacity:1}
+.ib{padding:4px 10px;border-radius:6px;border:none;font-size:10px;cursor:pointer;color:#fff;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);transition:var(--transition)}
+.ib:hover{background:var(--p1)}
+
+.iarea{padding:14px 24px 18px;border-top:1px solid var(--border);background:var(--surface)}
+.cr{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.cp{padding:9px 18px;border-radius:22px;border:1.5px solid var(--border);background:var(--card);color:var(--t2);cursor:pointer;font-size:12.5px;font-weight:500;transition:var(--transition);white-space:nowrap;letter-spacing:.2px}
+.cp:hover{border-color:var(--p2);color:var(--p2);transform:translateY(-1px)}
+.cp.on{background:linear-gradient(135deg,var(--p1),#6d28d9);border-color:transparent;color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(124,58,237,.35)}
+.sp{padding:6px 14px;border-radius:16px;border:1.5px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;font-size:11.5px;transition:var(--transition);white-space:nowrap}
+.sp:hover{border-color:var(--gold);color:var(--gold)}
+.sp.on{background:rgba(245,158,11,.12);border-color:var(--gold);color:var(--gold);font-weight:600}
+.sr{display:none;gap:6px;flex-wrap:wrap;margin-bottom:10px}.sr.show{display:flex}
+.rr{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:11px;color:var(--t3)}
+.rr label{cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px dashed var(--border);transition:var(--transition);display:flex;align-items:center;gap:5px;font-size:11px}
+.rr label:hover{border-color:var(--p2);color:var(--p2)}
+.ir{display:flex;gap:10px;align-items:flex-end}
+.ir textarea{flex:1;padding:12px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--t1);font-family:inherit;font-size:13.5px;resize:none;height:48px;max-height:130px;outline:none;line-height:1.6;transition:var(--transition)}
+.ir textarea:focus{border-color:var(--p1);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+.sb{padding:12px 28px;border-radius:14px;background:linear-gradient(135deg,var(--p1),#6d28d9);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:var(--transition);white-space:nowrap;box-shadow:0 4px 20px rgba(124,58,237,.3);letter-spacing:.3px}
+.sb:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,58,237,.45)}
+.sb:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.spn{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--p1);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-row{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;padding:8px 0}
-.image-viewer{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:none;align-items:center;justify-content:center;cursor:pointer}
-.image-viewer.show{display:flex}
-.image-viewer img{max-width:90vw;max-height:90vh;border-radius:8px}
-@media(max-width:768px){.sidebar{display:none;position:fixed;left:0;top:0;bottom:0;z-index:50}.sidebar.show{display:flex}}
+.rt{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;background:rgba(245,158,11,.12);color:var(--gold);font-size:10px;font-weight:500}
+.rt button{background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1}
+.vr{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:none;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px)}
+.vr.show{display:flex}.vr img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.6)}.vr .cx{position:absolute;top:24px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#fff;font-size:20px;cursor:pointer}
+@media(max-width:768px){.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%)}.sidebar.show{transform:translateX(0)}.msg{max-width:95%}.igrid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header"><h2>创作工坊</h2><button class="btn-icon" onclick="newConv()">+</button><button class="btn-icon" onclick="document.getElementById('sidebar').classList.toggle('show')">☰</button></div>
-    <div class="conv-list" id="convList"></div>
-    <div class="sidebar-footer"><span id="statusDot" style="color:#10b981">●</span> API 就绪 · <a href="/payment" style="color:var(--primary2)">充值</a> · <span id="credits">-</span>积分</div>
+  <div class="sidebar" id="sb">
+    <div class="sidebar-brand"><div class="logo">✨</div><h2>创作工坊</h2><button class="btn-icon" onclick="newConv()">+</button><button class="btn-icon" onclick="document.getElementById('sb').classList.toggle('show')">☰</button></div>
+    <div class="conv-list" id="cl"></div>
+    <div class="sidebar-foot"><span class="dot"></span> API · <a href="/payment">充值</a> · <span id="cred">-</span>分</div>
   </div>
   <div class="main">
-    <div class="main-header">
-      <button class="btn-icon" onclick="document.getElementById('sidebar').classList.toggle('show')" style="display:none" id="mobileMenuBtn">☰</button>
-      <h3 id="convTitle">新建对话</h3>
-      <select id="pm"><option value="deepseek-chat">DeepSeek</option><option value="deepseek-v4-pro">DeepSeek V4</option><option value="gemini-3-pro-preview">Gemini 3 Pro</option><option value="gpt-5.4">GPT-5.4</option><option value="claude-opus-4-7">Claude Opus</option><option value="qwen3-max">通义千问</option></select>
-      <select id="im"><option value="gemini-2.5-flash-image">Gemini Flash</option><option value="gpt-image-2">GPT-Image-2</option><option value="doubao-seedream-5-0-260128">豆包 Seedream</option></select>
-      <select id="isz"><option value="1024x1024">1:1</option><option value="1792x1024">16:9</option><option value="1024x1792">9:16</option></select>
-      <select id="icnt"><option value="1">1张</option><option value="2">2张</option><option value="4">4张</option></select>
+    <div class="main-head">
+      <button class="btn-icon" onclick="document.getElementById('sb').classList.toggle('show')" style="display:none">☰</button>
+      <h3 id="ct">新建对话</h3>
+      <select class="sel" id="pm"><option value="deepseek-chat">DeepSeek</option><option value="deepseek-v4-pro">DeepSeek V4</option><option value="gemini-3-pro-preview">Gemini 3 Pro</option><option value="gpt-5.4">GPT-5.4</option><option value="claude-opus-4-7">Claude Opus</option><option value="qwen3-max">通义千问</option></select>
+      <select class="sel" id="im"><option value="gemini-2.5-flash-image">Gemini Flash</option><option value="gpt-image-2">GPT-Image-2</option><option value="doubao-seedream-5-0-260128">豆包 Seedream</option></select>
+      <select class="sel" id="isz"><option value="1024x1024">1:1</option><option value="1792x1024">16:9</option><option value="1024x1792">9:16</option></select>
+      <select class="sel" id="icnt"><option value="1">1张</option><option value="2">2张</option><option value="4">4张</option></select>
     </div>
-    <div class="chat-area" id="chat"></div>
-    <div class="input-area">
-      <div class="opt-row" style="gap:4px;flex-wrap:wrap"><span style="font-size:11px;color:var(--text2)">类别:</span><button class="cat-pill" onclick="setCat('个人写真',this)" style="padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;transition:.2s">个人写真</button><button class="cat-pill" onclick="setCat('婚纱写真',this)">婚纱写真</button><button class="cat-pill" onclick="setCat('旅拍写真',this)">旅拍写真</button><button class="cat-pill" onclick="setCat('创意写真',this)">创意写真</button><button class="cat-pill" onclick="setCat('COS写真',this)">COS写真</button>
-<div class="opt-row" id="subRow" style="display:none;flex-wrap:wrap;gap:3px"></div></div><div class="opt-row">
-        <span id="refBar"></span>
-        <label for="refFiles">📷 参考图</label>
-        <input type="file" id="refFiles" accept="image/*" multiple style="display:none" onchange="onRefPick(this)">
-        <span id="refInfo" style="font-size:10px"></span>
-        <button onclick="clearRefs()" id="refClear" style="display:none;font-size:10px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;padding:2px 6px">清除</button>
-      </div>
-      <div class="input-row">
-        <textarea id="uin" placeholder="描述你想要的写真效果..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
-        <button class="send-btn" id="sendBtn" onclick="send()">发送</button>
-      </div>
+    <div class="chat" id="chat">
+      <div class="welcome"><div class="icon">🎬</div><h2>AI 写真创作工坊</h2><p>用自然语言描述，AI 自动生成专业写真方案</p><div class="sug"><span class="sugb" onclick="$('uin').value=this.textContent;send()">女生毕业照 校园草坪 阳光明媚</span><span class="sugb" onclick="$('uin').value=this.textContent;send()">复古胶片婚纱照 海边日落</span><span class="sugb" onclick="$('uin').value=this.textContent;send()">赛博朋克人像 霓虹灯下</span></div></div>
+    </div>
+    <div class="iarea">
+      <div class="cr" id="cr"><span style="font-size:11px;color:var(--t3);margin-right:4px;font-weight:600">分类</span><button class="cp" data-cat="个人写真">个人写真</button><button class="cp" data-cat="婚纱写真">婚纱写真</button><button class="cp" data-cat="旅拍写真">旅拍写真</button><button class="cp" data-cat="创意写真">创意写真</button><button class="cp" data-cat="COS写真">COS写真</button></div>
+      <div class="sr" id="sr"></div>
+      <div class="rr"><span id="rb"></span><label for="rf">📷 参考图</label><input type="file" id="rf" accept="image/*" multiple style="display:none" onchange="onRefPick(this)"><span id="ri"></span><button onclick="clearRefs()" id="rc" style="display:none;background:none;border:1px solid var(--border);border-radius:6px;color:var(--t2);cursor:pointer;padding:3px 8px;font-size:10px">清除</button></div>
+      <div class="ir"><textarea id="uin" placeholder="描述你想要的写真效果，按 Enter 发送..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea><button class="sb" id="sbn" onclick="send()">发送</button></div>
     </div>
   </div>
 </div>
-<div class="image-viewer" id="viewer" onclick="this.classList.remove('show')"><img id="viewerImg"></div>
+<div class="vr" id="vr" onclick="this.classList.remove('show')"><button class="cx" onclick="document.getElementById('vr').classList.remove('show')">✕</button><img id="vi"></div>
 
 <script>
-var $=function(id){return document.getElementById(id)};
-var LS=function(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem('px_'+k));localStorage.setItem('px_'+k,JSON.stringify(v))}catch(e){return v===undefined?null:void 0}};
+var $=id=>document.getElementById(id);
+var LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem('px_'+k));localStorage.setItem('px_'+k,JSON.stringify(v))}catch(e){return v===undefined?null:void 0}}
 var K={ds:'sk-0fe9505332be4b408cb9030a97d7a199',gw:'sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry',base:'https://api.geeknow.ai/v1'};
-var S={convs:[],activeId:null,loading:false,refFiles:[],refMsg:null,selectedCat:null};var subStyles={"个人写真":["清新日系","黑白情绪","法式慵懒","都市简约","胶片复古","韩系奶油","男友视角","居家随拍","光影切割","港风霓虹","日杂模特","清冷破碎"],"婚纱写真":["韩式极简","森系自然","法式庄园","新中式","海边轻纱","城市街拍","电影剧情式","复古胶片","极地冰雪","沙漠风","烟火夜景","花房温室","民国旗袍"],"旅拍写真":["城市漫游","自然风光","人文纪实","轻奢度假","公路旅行","极地探险","沙漠穿越","海岛潜水","古城穿越","游牧草原","火车旅行","都市夜景"],"创意写真":["童话幻想","复古时代","超现实","戏剧舞台","末日废土","赛博朋克","水下雨林","敦煌飞天","异形生物","破碎娃娃","未来战士","蝴蝶标本"],"COS写真":["二次元动漫","游戏角色","古风仙侠","蒸汽朋克","克苏鲁暗黑","特摄英雄","赛博忍者","神话众神","洛丽塔哥特","铠甲骑士","狐妖妖怪","科幻机甲"]};var S={convs:[],activeId:null,loading:false,refFiles:[],refMsg:null,selectedCat:null,selectedSub:null};function setCat(c,el){S.selectedCat=c;S.selectedSub=null;document.querySelectorAll(".cat-pill").forEach(function(x){x.style.background="transparent";x.style.color="var(--text2)";x.style.borderColor="var(--border)";x.style.fontWeight="normal"});el.style.background="rgba(124,58,237,.2)";el.style.borderColor="var(--primary)";el.style.color="var(--primary2)";el.style.fontWeight="600";var sr=document.getElementById("subRow");var ss=subStyles[c];if(ss){sr.style.display="flex";sr.innerHTML="";ss.forEach(function(s){var b=document.createElement("button");b.className="cat-pill";b.textContent=s;b.onclick=function(){S.selectedSub=s;document.querySelectorAll("#subRow .cat-pill").forEach(function(x){x.style.background="transparent";x.style.color="var(--text2)"});b.style.background="rgba(245,158,11,.2)";b.style.borderColor="var(--accent)";b.style.color="var(--accent)"};sr.appendChild(b)})}else{sr.style.display="none"}}
+var S={convs:[],aid:null,loading:false,rf:[],rm:null,cat:null,sub:null};
+var SUBS={'个人写真':['清新日系','黑白情绪','法式慵懒','都市简约','胶片复古','韩系奶油','男友视角','居家随拍','光影切割','港风霓虹','日杂模特','清冷破碎'],'婚纱写真':['韩式极简','森系自然','法式庄园','新中式','海边轻纱','城市街拍','电影剧情式','复古胶片','极地冰雪','沙漠风','烟火夜景','花房温室','民国旗袍'],'旅拍写真':['城市漫游','自然风光','人文纪实','轻奢度假','公路旅行','极地探险','沙漠穿越','海岛潜水','古城穿越','游牧草原','火车旅行','都市夜景'],'创意写真':['童话幻想','复古时代','超现实','戏剧舞台','末日废土','赛博朋克','水下雨林','敦煌飞天','异形生物','破碎娃娃','未来战士','蝴蝶标本'],'COS写真':['二次元动漫','游戏角色','古风仙侠','蒸汽朋克','克苏鲁暗黑','特摄英雄','赛博忍者','神话众神','洛丽塔哥特','铠甲骑士','狐妖妖怪','科幻机甲']};
 
-function newConv(){var c={id:'c'+Date.now(),title:'新建对话',ts:Date.now(),msgs:[]};S.convs.unshift(c);S.activeId=c.id;save();render()}
-function curConv(){return S.convs.find(function(x){return x.id===S.activeId})||S.convs[0]}
-function delConv(id){S.convs=S.convs.filter(function(x){return x.id!==id});if(S.activeId===id)S.activeId=S.convs.length?S.convs[0].id:null;save();render()}
-function switchConv(id){S.activeId=id;render()}
+// Cat pills
+$('cr').addEventListener('click',function(e){var b=e.target.closest('.cp');if(!b)return;S.cat=b.dataset.cat;S.sub=null;document.querySelectorAll('#cr .cp').forEach(function(x){x.classList.remove('on')});b.classList.add('on');var s=$('sr');var ss=SUBS[S.cat];if(ss){s.innerHTML='';s.classList.add('show');ss.forEach(function(v){var el=document.createElement('button');el.className='sp';el.textContent=v;el.onclick=function(e){S.sub=v;document.querySelectorAll('#sr .sp').forEach(function(x){x.classList.remove('on')});el.classList.add('on');e.stopPropagation()};s.appendChild(el)})}else{s.classList.remove('show')}});
+
+// Sidebar
+function newConv(){var c={id:'c'+Date.now(),title:'新建对话',ts:Date.now(),msgs:[]};S.convs.unshift(c);S.aid=c.id;save();r()}
+function cv(){return S.convs.find(function(x){return x.id===S.aid})||S.convs[0]}
+function delConv(id){S.convs=S.convs.filter(function(x){return x.id!==id});if(S.aid===id)S.aid=S.convs.length?S.convs[0].id:null;save();r()}
+function switchConv(id){S.aid=id;r()}
 function save(){LS('convs',S.convs)}
-function load(){S.convs=LS('convs')||[];S.activeId=S.convs.length?S.convs[0].id:null}
+function load(){S.convs=LS('convs')||[];S.aid=S.convs.length?S.convs[0].id:null}
 
-function render(){
-  var cl=$('convList');cl.innerHTML='';S.convs.forEach(function(c){
-    var d=document.createElement('div');d.className='conv-item'+(c.id===S.activeId?' active':'');
-    d.onclick=function(){switchConv(c.id)};
-    var s=document.createElement('span');s.style.overflow='hidden';s.style.textOverflow='ellipsis';s.textContent=c.title||'新建对话';
-    d.appendChild(s);
-    var del=document.createElement('span');del.className='del';del.textContent='×';
-    del.onclick=function(e){e.stopPropagation();if(confirm('删除对话？'))delConv(c.id)};
-    d.appendChild(del);
-    cl.appendChild(d);
-  });
-  var cv=curConv();$('convTitle').textContent=cv?cv.title:'新建对话';
-  var ca=$('chat');
-  if(!cv||!cv.msgs.length){ca.innerHTML='<div class="chat-welcome"><h2>AI 写真创作工坊</h2><p>用自然语言描述你想要的写真效果</p><p style="font-size:12px;color:var(--text2)">示例：女生毕业照，校园草坪，阳光明媚，穿着学士服</p></div>';return}
-  ca.innerHTML='';cv.msgs.forEach(function(m,i){var el=renderMsg(m,i);if(el)ca.appendChild(el)});
-  ca.scrollTop=ca.scrollHeight;
-}function renderMsg(m,idx){
-  if(m.role==='user'){var d=document.createElement('div');d.className='msg user';d.innerHTML='<div class="msg-avatar">👤</div><div class="msg-bubble"><div class="msg-content">'+esc(m.content)+'</div></div>';return d}
-  var d=document.createElement('div');d.className='msg ai';
-  d.innerHTML='<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="msg-content">'+esc(m.content)+'</div></div>';
-  var bubble=d.querySelector('.msg-bubble');
-  if(m.prompt){
-    var det=document.createElement('details');det.className='prompt-box';
-    var sum=document.createElement('summary');sum.textContent='查看提示词';det.appendChild(sum);
-    var keys=['scene','action','expression','lighting','tone','composition','cn','en'];
-    keys.forEach(function(k){if(m.prompt[k]){var fld=document.createElement('div');fld.className='fld';fld.innerHTML='<div class="fl">'+k+'</div><div class="fv">'+esc(m.prompt[k])+'</div>';det.appendChild(fld)}});
-    bubble.appendChild(det);
-  }
-  if(m.images&&m.images.length){
-    var grid=document.createElement('div');grid.className='img-grid';
-    m.images.forEach(function(url,i){
-      var card=document.createElement('div');card.className='img-card';
-      var img=document.createElement('img');img.src=url;img.onclick=function(){viewImg(url)};
-      card.appendChild(img);
-      var acts=document.createElement('div');acts.className='img-actions';
-      var dbtn=document.createElement('button');dbtn.className='img-btn';dbtn.textContent='下载';dbtn.onclick=function(e){e.stopPropagation();downloadImg(url)};
-      var rbtn=document.createElement('button');rbtn.className='img-btn';rbtn.textContent='参考';rbtn.onclick=function(e){e.stopPropagation();useRef(idx,i)};
-      acts.appendChild(dbtn);acts.appendChild(rbtn);
-      card.appendChild(acts);grid.appendChild(card);
-    });
-    bubble.appendChild(grid);
-  }
-  var meta=document.createElement('div');meta.className='msg-meta';
-  meta.innerHTML=new Date(m.ts).toLocaleTimeString()+' · ';
-  var retryBtn=document.createElement('button');retryBtn.textContent='重新生成';retryBtn.onclick=function(){retry(idx)};
-  meta.appendChild(retryBtn);
-  bubble.appendChild(meta);
-  return d;
-}function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function r(){
+  var cl=$('cl');cl.innerHTML='';S.convs.forEach(function(c){var d=document.createElement('div');d.className='conv-item'+(c.id===S.aid?' active':'');d.onclick=function(){switchConv(c.id)};var s=document.createElement('span');s.className='t';s.textContent=c.title||'新建对话';var x=document.createElement('span');x.className='d';x.textContent='×';x.onclick=function(e){e.stopPropagation();if(confirm('删除？'))delConv(c.id)};d.appendChild(s);d.appendChild(x);cl.appendChild(d)});
+  var c=cv();$('ct').textContent=c?c.title:'新建对话';
+  var ch=$('chat');
+  if(!c||!c.msgs.length){ch.innerHTML='<div class="welcome"><div class="icon">🎬</div><h2>AI 写真创作工坊</h2><p>用自然语言描述，AI 自动生成专业写真方案</p><div class="sug"><span class="sugb" onclick="document.getElementById(\'uin\').value=this.textContent;send()">女生毕业照 校园草坪 阳光明媚</span><span class="sugb" onclick="document.getElementById(\'uin\').value=this.textContent;send()">复古胶片婚纱照 海边日落</span><span class="sugb" onclick="document.getElementById(\'uin\').value=this.textContent;send()">赛博朋克人像 霓虹灯下</span></div></div>';return}
+  ch.innerHTML='';c.msgs.forEach(function(m,i){var el=bm(m,i);if(el)ch.appendChild(el)});ch.scrollTop=ch.scrollHeight;
+}
 
-// ── Send ──
+function bm(m,idx){
+  if(m.role==='user'){var d=document.createElement('div');d.className='msg user';d.innerHTML='<div class="ava">👤</div><div class="bbl"><div class="mc">'+esc(m.content)+'</div></div>';return d}
+  var d=document.createElement('div');d.className='msg ai';d.innerHTML='<div class="ava">🤖</div><div class="bbl"><div class="mc">'+esc(m.content)+'</div></div>';
+  var b=d.querySelector('.bbl');
+  if(m.prompt){var det=document.createElement('details');det.className='pbox';det.innerHTML='<summary>查看提示词</summary>';['scene','action','expression','lighting','tone','composition','cn','en'].forEach(function(k){if(m.prompt[k])det.innerHTML+='<div class="fd"><div class="fl">'+k+'</div><div class="fv">'+esc(m.prompt[k])+'</div></div>'});b.appendChild(det)}
+  if(m.images&&m.images.length){var g=document.createElement('div');g.className='igrid';m.images.forEach(function(url,i){var c=document.createElement('div');c.className='ic';c.innerHTML='<img src="'+url+'" onclick="viewImg(\''+url+'\')"><div class="ia"><button class="ib" onclick="event.stopPropagation();downloadImg(\''+url+'\')">下载</button><button class="ib" onclick="event.stopPropagation();useRef('+idx+','+i+')">参考</button></div>';g.appendChild(c)});b.appendChild(g)}
+  var m2=document.createElement('div');m2.className='mm';m2.innerHTML=new Date(m.ts).toLocaleTimeString()+' · ';var rb=document.createElement('button');rb.textContent='重新生成';rb.onclick=function(){retry(idx)};m2.appendChild(rb);b.appendChild(m2);return d;
+}
+
 async function send(){
-  if(S.loading)return;var txt=$('uin').value.trim();if(!txt)return;
-  S.loading=true;$('sendBtn').disabled=true;$('uin').value='';
-  var cv=curConv();if(!cv){newConv();cv=curConv()}
-  if(!cv.msgs.length)cv.title=txt.slice(0,30);
-  var uMsg={id:'m'+Date.now(),role:'user',content:(S.selectedCat?('【'+S.selectedCat+(S.selectedSub?'·'+S.selectedSub:'')+'】'):'')+txt,ts:Date.now()};cv.msgs.push(uMsg);save();render();
-  $('chat').insertAdjacentHTML('beforeend','<div class="loading-row"><span class="spinner"></span>AI 正在创作...</div>');$('chat').scrollTop=$('chat').scrollHeight;
+  if(S.loading)return;var t=$('uin').value.trim();if(!t)return;S.loading=true;$('sbn').disabled=true;$('uin').value='';
+  var c=cv();if(!c){newConv();c=cv()}if(!c.msgs.length)c.title=t.slice(0,30);
+  var pt=(S.cat?('【'+S.cat+(S.sub?'·'+S.sub:'')+'】'):'')+t;
+  c.msgs.push({id:'m'+Date.now(),role:'user',content:pt,ts:Date.now()});save();r();
+  $('chat').insertAdjacentHTML('beforeend','<div style="padding:12px 0;color:var(--t2)"><span class="spn"></span>AI 创作中...</div>');$('chat').scrollTop=$('chat').scrollHeight;
   try{
-    var prev=null;for(var i=cv.msgs.length-2;i>=0;i--){if(cv.msgs[i].role==='assistant'&&cv.msgs[i].prompt){prev=cv.msgs[i];break}}
-    var refImgs=[];if(S.refMsg!==null&&S.refMsg>=0&&S.refMsg<cv.msgs.length&&cv.msgs[S.refMsg].images)refImgs=cv.msgs[S.refMsg].images.slice(0,2);
-    var prompt=await genPrompt(txt,prev);
-    var imgs=await genImgs(prompt.en,$('im').value,$('isz').value,parseInt($('icnt').value),refImgs,S.refFiles);
-    var aMsg={id:'m'+Date.now(),role:'assistant',content:prompt.cn.slice(0,80)+'...',prompt:prompt,images:imgs,ts:Date.now()};cv.msgs.push(aMsg);
-    S.refMsg=null;clearRefs();
-  }catch(e){cv.msgs.push({id:'m'+Date.now(),role:'system',content:'生成失败: '+e.message,ts:Date.now()})}
-  S.loading=false;$('sendBtn').disabled=false;
-  document.querySelectorAll('.loading-row').forEach(function(x){x.remove()});
-  save();render();
+    var prev=null;for(var i=c.msgs.length-2;i>=0;i--){if(c.msgs[i].role==='assistant'&&c.msgs[i].prompt){prev=c.msgs[i];break}}
+    var ri=[];if(S.rm!==null&&S.rm>=0&&S.rm<c.msgs.length&&c.msgs[S.rm].images)ri=c.msgs[S.rm].images.slice(0,2);
+    var p=await gp(pt,prev);var imgs=await gi(p.en,$('im').value,$('isz').value,parseInt($('icnt').value),ri,S.rf);
+    c.msgs.push({id:'m'+Date.now(),role:'assistant',content:p.cn.slice(0,80)+'...',prompt:p,images:imgs,ts:Date.now()});S.rm=null;clearRefs();
+  }catch(e){c.msgs.push({id:'m'+Date.now(),role:'system',content:'失败: '+e.message,ts:Date.now()})}
+  S.loading=false;$('sbn').disabled=false;document.querySelectorAll('.spn').forEach(function(x){x.parentElement.remove()});save();r();
 }
 
-async function genPrompt(txt,prev){
-  var msgs=[{role:'system',content:SYS}];
-  if(prev&&prev.prompt){msgs.push({role:'system',content:'上一轮生成的写真提示词如下，请在此基础上根据用户新需求进行迭代优化，保持整体风格：\\n中文方案：'+prev.prompt.cn+'\\nEnglish Prompt：'+prev.prompt.en})}
-  msgs.push({role:'user',content:txt});
-  var r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+K.ds},body:JSON.stringify({model:$('pm').value,messages:msgs,temperature:.85,max_tokens:3000})});
-  if(!r.ok){var e=await r.json().catch(function(){return{}});throw new Error(e.error?.message||'DeepSeek error '+r.status)}
-  return parsePrompt((await r.json()).choices[0].message.content);
+async function gp(t,prev){
+  var m=[{role:'system',content:SYS}];if(prev&&prev.prompt){m.push({role:'system',content:'上一轮：\n中文：'+prev.prompt.cn+'\n英文：'+prev.prompt.en+'\n在此基础迭代优化'})}m.push({role:'user',content:t});
+  var r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+K.ds},body:JSON.stringify({model:$('pm').value,messages:m,temperature:.85,max_tokens:3000})});
+  if(!r.ok){var e=await r.json().catch(function(){return{}});throw new Error(e.error?.message||'API '+r.status)}
+  return pp((await r.json()).choices[0].message.content);
 }
 
-function parsePrompt(t){
-  var r={scene:'',action:'',expression:'',lighting:'',tone:'',composition:'',cn:'',en:''};
-  function ex(hdr){var m=t.match(new RegExp(hdr+'\\s*[：:]\\s*(.+?)(?=\\n[📷💃😊💡🎨📐🌐🌍]|\\n━━|\\n🎬|$)','su'));return m?m[1].trim():''}
-  r.scene=ex('📷\\s*场景');r.action=ex('💃\\s*动作\\s*/\\s*姿态');r.expression=ex('😊\\s*表情\\s*/\\s*情绪');
-  r.lighting=ex('💡\\s*光线方案');r.tone=ex('🎨\\s*色调\\s*/\\s*影调');r.composition=ex('📐\\s*构图建议');
-  var m=t.match(/🌐.*?视觉方案.*?\n(.+?)(?=\n🌍|\nEnglish|\n━━|$)/su);if(m)r.cn=m[1].trim();
-  m=t.match(/🌍.*?English Prompt.*?\n(.+?)(?=\n━━|\n📝|\n⚠|$)/su);if(m)r.en=m[1].trim();
-  if(!r.cn)r.cn=t.trim();if(!r.en||/[\u4e00-\u9fff]/.test(r.en.slice(0,50)))r.en=t.trim();
-  r.en=r.en.replace(/[【】⚠].*?[：:].*?\n?/g,'').trim();if(r.en.length>900)r.en=r.en.slice(0,900);
-  return r;
-}
+function pp(t){var r={scene:'',action:'',expression:'',lighting:'',tone:'',composition:'',cn:'',en:''};function ex(h){var m=t.match(new RegExp(h+'\\s*[：:]\\s*(.+?)(?=\\n[📷💃😊💡🎨📐🌐🌍]|\\n━━|\\n🎬|$)','su'));return m?m[1].trim():''}r.scene=ex('📷\\s*场景');r.action=ex('💃\\s*动作\\s*/\\s*姿态');r.expression=ex('😊\\s*表情\\s*/\\s*情绪');r.lighting=ex('💡\\s*光线方案');r.tone=ex('🎨\\s*色调\\s*/\\s*影调');r.composition=ex('📐\\s*构图建议');var m=t.match(/🌐.*?视觉方案.*?\n(.+?)(?=\n🌍|\nEnglish|\n━━|$)/su);if(m)r.cn=m[1].trim();m=t.match(/🌍.*?English Prompt.*?\n(.+?)(?=\n━━|\n📝|\n⚠|$)/su);if(m)r.en=m[1].trim();if(!r.cn)r.cn=t.trim();if(!r.en||/[\u4e00-\u9fff]/.test(r.en.slice(0,50)))r.en=t.trim();r.en=r.en.replace(/[【】⚠].*?[：:].*?\n?/g,'').trim();if(r.en.length>900)r.en=r.en.slice(0,900);return r}
 
-async function genImgs(en,mdl,size,n,refImgs,localRefs){
-  var urls=[];
-  for(var i=0;i<n;i++){
-    var body={model:mdl,prompt:en+' Chinese portrait 8K ARRI ALEXA LF cinematic Kodak Vision3 500T pristine quality',size:size,n:1};
-    if(refImgs&&refImgs.length)body.image=refImgs[i%refImgs.length];
-    if(localRefs&&localRefs.length)body.image=await toB64(localRefs[localRefs.length>1?i%localRefs.length:0]);
-    var r=await fetch(K.base+'/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+K.gw},body:JSON.stringify(body)});
-    if(!r.ok){var e=await r.json().catch(function(){return{}});throw new Error(e.error?.message||'Image error '+r.status)}
-    var d=await r.json();if(d.data&&d.data[0])urls.push(d.data[0].url);
-  }
-  return urls;
-}
-
-function retry(idx){
-  var cv=curConv();if(!cv||idx>=cv.msgs.length)return;cv.msgs.splice(idx,1);save();render();
-  var u=cv.msgs[idx-1];if(u&&u.role==='user'){$('uin').value=u.content;send()}
-}
-
-function useRef(mIdx,iIdx){S.refMsg=mIdx;$('refBar').innerHTML='<span class="ref-badge">参考对话图 #'+(iIdx+1)+' <button onclick=\"S.refMsg=null;$(\'refBar\').innerHTML=\'\'\" style=\"font-size:12px\">×</button></span>'}
-
-// ── Reference upload ──
 var _rf=[];
-function onRefPick(i){_rf=Array.from(i.files).slice(0,6);S.refFiles=_rf;$('refInfo').textContent=_rf.length+'张';$('refClear').style.display=_rf.length?'':'none'}
-function clearRefs(){_rf=[];S.refFiles=[];$('refInfo').textContent='';$('refClear').style.display='none';$('refFiles').value=''}
+function onRefPick(i){_rf=Array.from(i.files).slice(0,6);S.rf=_rf;$('ri').textContent=_rf.length+'张';$('rc').style.display=_rf.length?'':'none'}
+function clearRefs(){_rf=[];S.rf=[];$('ri').textContent='';$('rc').style.display='none';$('rf').value=''}
 function toB64(f){return new Promise(function(rs){var r=new FileReader();r.onload=function(){rs(r.result)};r.readAsDataURL(f)})}
 
-// ── Utils ──
-function viewImg(u){$('viewerImg').src=u;$('viewer').classList.add('show')}
-function downloadImg(u){var a=document.createElement('a');a.href=u;a.download='ai-photo.jpg';a.click()}
-async function loadCredits(){if(location.hostname.indexOf('github.io')>=0)return;try{var r=await fetch('/api/auth/me',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:K.gw})});if(r.ok){var d=await r.json();$('credits').textContent=d.credits||0}}catch(e){}}
+async function gi(en,mdl,size,n,ri,lr){
+  var u=[];for(var i=0;i<n;i++){var b={model:mdl,prompt:en+' Chinese portrait 8K ARRI ALEXA LF cinematic Kodak Vision3 500T pristine quality',size:size,n:1};if(ri&&ri.length)b.image=ri[i%ri.length];if(lr&&lr.length)b.image=await toB64(lr[lr.length>1?i%lr.length:0]);var r=await fetch(K.base+'/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+K.gw},body:JSON.stringify(b)});if(!r.ok){var e=await r.json().catch(function(){return{}});throw new Error(e.error?.message||'Img '+r.status)}var d=await r.json();if(d.data&&d.data[0])u.push(d.data[0].url)}return u}
 
-// ── System Prompt ──
-var SYS='你是一个专业的 AI 写真提示词导演。用户用自然语言描述需求，你自动生成中文视觉方案和英文 prompt。\n\n核心规则：\n1. 所有人物默认为中国人形象(Chinese/East Asian)，英文 prompt 必须包含 Chinese\n2. 抽象形容转化为具体视觉细节\n3. 输出格式：\n📷 场景：{场景}\n💃 动作/姿态：{动作}\n😊 表情/情绪：{表情}\n💡 光线方案：{光线}\n🎨 色调/影调：{色调}\n📐 构图建议：{构图}\n🌐 中文视觉方案（完整融合版）\n{中文描述}\n🌍 English Prompt\n{英文关键词，逗号分隔，前5词定调，含摄影术语}';
+function retry(idx){var c=cv();if(!c||idx>=c.msgs.length)return;c.msgs.splice(idx,1);save();r();var u=c.msgs[idx-1];if(u&&u.role==='user'){$('uin').value=u.content.replace(/^【.+?】/,'');send()}}
+function useRef(mi,ii){S.rm=mi;$('rb').innerHTML='<span class="rt">参考图 #'+(ii+1)+' <button onclick="S.rm=null;document.getElementById(\'rb\').innerHTML=\'\'">×</button></span>'}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function viewImg(u){$('vi').src=u;$('vr').classList.add('show')}
+function downloadImg(u){var a=document.createElement('a');a.href=u;a.download='photo.jpg';a.click()}
+async function lc(){if(location.hostname.indexOf('github.io')>=0)return;try{var r=await fetch('/api/auth/me',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:K.gw})});if(r.ok){var d=await r.json();$('cred').textContent=d.credits||0}}catch(e){}}
 
-// ── Init ──
-load();if(!S.convs.length)newConv();render();loadCredits();
+var SYS='你是专业的AI写真提示词导演。根据用户描述生成中英双语写真方案。\n规则：1.人物默认中国人(Chinese/East Asian) 2.抽象转具象 3.格式：\n📷 场景：\n💃 动作/姿态：\n😊 表情/情绪：\n💡 光线方案：\n🎨 色调/影调：\n📐 构图建议：\n🌐 中文视觉方案（完整融合版）\n🌍 English Prompt（前5词定调，含电影色彩科学Kodak/Fujifilm/ARRI）';
+
+load();if(!S.convs.length)newConv();r();lc();
 </script>
 </body>
 </html>

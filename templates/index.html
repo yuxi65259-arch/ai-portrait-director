@@ -1012,14 +1012,14 @@ function regenerateImg(){
 }
 
 // ── Reference ──
-var _allRefs=[];function previewRef(i){var files=Array.from(i.files);if(!files.length)return;var cur=_allRefs.concat(files);if(cur.length>6){alert('最多上传6张参考图');cur=cur.slice(0,6)}_allRefs=cur;$('refName').textContent=cur.length+' 张参考图';$('refClear').style.display='';$('uploadZone').classList.add('has-file');renderRefPreviews()}function renderRefPreviews(){var c=$('refPreviews');c.innerHTML='';_allRefs.forEach(function(f,i){var r=new FileReader();r.onload=function(e){var w=document.createElement('div');w.className='ref-preview-wrap';w.innerHTML='<img src="'+e.target.result+'"><button class="ref-del" onclick="removeRef('+i+')">x</button>';c.appendChild(w)};r.readAsDataURL(f)})}function removeRef(i){_allRefs.splice(i,1);renderRefPreviews();if(!_allRefs.length){clearRef()}}
+var _allRefs=[];function previewRef(i){var files=Array.from(i.files);if(!files.length)return;_allRefs=files.slice(0,6);$('refName').textContent=_allRefs.length+' 张参考图';$('refClear').style.display=_allRefs.length?'':'';$('uploadZone').classList.toggle('has-file',_allRefs.length>0);renderRefPreviews()}function renderRefPreviews(){var c=$('refPreviews');c.innerHTML='';_allRefs.forEach(function(f,i){var r=new FileReader();r.onload=function(e){var w=document.createElement('div');w.className='ref-preview-wrap';w.innerHTML='<img src="'+e.target.result+'"><button class="ref-del" onclick="removeRef('+i+')">x</button>';c.appendChild(w)};r.readAsDataURL(f)})}function removeRef(i){_allRefs.splice(i,1);renderRefPreviews();if(!_allRefs.length){clearRef()}}
 
 // Drag & drop
 var uz=document.getElementById('uploadZone');
 if(uz){
   uz.addEventListener('dragover',function(e){e.preventDefault();uz.style.borderColor='var(--primary)'});
   uz.addEventListener('dragleave',function(e){e.preventDefault();uz.style.borderColor=uz.classList.contains('has-file')?'var(--accent)':''});
-  uz.addEventListener('drop',function(e){e.preventDefault();uz.style.borderColor='';var files=Array.from(e.dataTransfer.files);if(files.length){var dt=new DataTransfer();var all=_allRefs.concat(files).slice(0,6);all.forEach(function(f){dt.items.add(f)});document.getElementById('refUpload').files=dt.files;previewRef({files:all})}});
+  uz.addEventListener('drop',function(e){e.preventDefault();uz.style.borderColor='';var files=Array.from(e.dataTransfer.files);if(files.length){var dt=new DataTransfer();var all=files.slice(0,6);all.forEach(function(f){dt.items.add(f)});document.getElementById('refUpload').files=dt.files;previewRef({files:all})}});
 }
 
 function clearRef(){_allRefs=[];$('refUpload').value='';$('refName').textContent='';$('refClear').style.display='none';$('refPreviews').innerHTML='';$('uploadZone').classList.remove('has-file')}

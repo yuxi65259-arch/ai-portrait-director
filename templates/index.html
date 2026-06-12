@@ -95,7 +95,8 @@ body{font-family:-apple-system,'Noto Sans SC',sans-serif;background:var(--bg);co
     </div>
     <div class="chat-area" id="chat"></div>
     <div class="input-area">
-      <div class="opt-row" style="gap:4px;flex-wrap:wrap"><span style="font-size:11px;color:var(--text2)">类别:</span><button class="cat-pill" onclick="setCat('个人写真',this)" style="padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;transition:.2s">个人写真</button><button class="cat-pill" onclick="setCat('婚纱写真',this)">婚纱写真</button><button class="cat-pill" onclick="setCat('旅拍写真',this)">旅拍写真</button><button class="cat-pill" onclick="setCat('创意写真',this)">创意写真</button><button class="cat-pill" onclick="setCat('COS写真',this)">COS写真</button></div><div class="opt-row">
+      <div class="opt-row" style="gap:4px;flex-wrap:wrap"><span style="font-size:11px;color:var(--text2)">类别:</span><button class="cat-pill" onclick="setCat('个人写真',this)" style="padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;transition:.2s">个人写真</button><button class="cat-pill" onclick="setCat('婚纱写真',this)">婚纱写真</button><button class="cat-pill" onclick="setCat('旅拍写真',this)">旅拍写真</button><button class="cat-pill" onclick="setCat('创意写真',this)">创意写真</button><button class="cat-pill" onclick="setCat('COS写真',this)">COS写真</button>
+<div class="opt-row" id="subRow" style="display:none;flex-wrap:wrap;gap:3px"></div></div><div class="opt-row">
         <span id="refBar"></span>
         <label for="refFiles">📷 参考图</label>
         <input type="file" id="refFiles" accept="image/*" multiple style="display:none" onchange="onRefPick(this)">

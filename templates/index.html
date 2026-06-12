@@ -392,6 +392,9 @@ body {
 }
 .structured-card .s-edit[readonly] { cursor: default; }
 
+.structured-card .s-text{width:100%;min-height:60px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;padding:8px;font-family:inherit;font-size:13px;line-height:1.7;resize:vertical;outline:none;transition:border-color .2s}
+.structured-card .s-text:hover{border-color:var(--primary2)}.structured-card .s-text:focus{border-color:var(--primary);color:var(--text);background:var(--surface)}
+
 .structured-card .s-title {
   font-size: 12px;
   color: var(--primary2);
@@ -646,12 +649,12 @@ body {
 
       <!-- Structured fields -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div class="structured-card" id="boxScene"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">📷 场景</div><textarea class="s-text s-edit" readonly></textarea></div>
-        <div class="structured-card" id="boxAction"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">💃 动作/姿态</div><textarea class="s-text s-edit" readonly></textarea></div>
-        <div class="structured-card" id="boxExpression"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">😊 表情/情绪</div><textarea class="s-text s-edit" readonly></textarea></div>
-        <div class="structured-card" id="boxLighting"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">💡 光线方案</div><textarea class="s-text s-edit" readonly></textarea></div>
-        <div class="structured-card" id="boxTone"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">🎨 色调/影调</div><textarea class="s-text s-edit" readonly></textarea></div>
-        <div class="structured-card" id="boxComposition"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">📐 构图建议</div><textarea class="s-text s-edit" readonly></textarea></div>
+        <div class="structured-card" id="boxScene"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">📷 场景</div><textarea class="s-text s-edit"></textarea></div>
+        <div class="structured-card" id="boxAction"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">💃 动作/姿态</div><textarea class="s-text s-edit"></textarea></div>
+        <div class="structured-card" id="boxExpression"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">😊 表情/情绪</div><textarea class="s-text s-edit"></textarea></div>
+        <div class="structured-card" id="boxLighting"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">💡 光线方案</div><textarea class="s-text s-edit"></textarea></div>
+        <div class="structured-card" id="boxTone"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">🎨 色调/影调</div><textarea class="s-text s-edit"></textarea></div>
+        <div class="structured-card" id="boxComposition"><div class="s-title" style="display:flex;justify-content:space-between;align-items:center">📐 构图建议</div><textarea class="s-text s-edit"></textarea></div>
       </div>
 
       <div class="prompt-box">

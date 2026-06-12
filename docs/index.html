@@ -140,7 +140,7 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 .settings-fab:hover { border-color: var(--primary2); color: var(--primary2); }
 .settings-panel {
@@ -471,7 +471,7 @@ body {
   z-index: 100;
   display: none;
   align-items: center; justify-content: center;
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 .overlay.show { display: flex; }
 .loader-card {
@@ -556,43 +556,21 @@ body {
 
 
 <!-- Settings -->
-<button class="settings-fab" onclick="toggleSettings()" title="API 设置"><span aria-label="设置">⚙</span></button>
+<button class="settings-fab" onclick="toggleSettings()" title="API 设置">⚙</button>
 <button class="settings-fab history-fab" onclick="toggleHistory()" title="历史记录" style="top:72px">📜</button>
 <div class="settings-panel" id="settingsPanel">
   <label>DeepSeek API Key</label>
-  <input type="password" id="dsKey" aria-label="DeepSeek API Key" title="DeepSeek API Key" placeholder="sk-...">
+  <input type="password" id="dsKey" placeholder="sk-...">
   <label>代理 API Key (geeknow.ai)</label>
-  <input type="password" id="gwKey" aria-label="代理 API Key" title="代理 API Key" placeholder="sk-...">
+  <input type="password" id="gwKey" placeholder="sk-...">
   <label>代理地址</label>
-  <input type="text" id="gwBase" aria-label="代理地址" title="代理地址" placeholder="https://api.geeknow.ai/v1" value="https://api.geeknow.ai/v1">
+  <input type="text" id="gwBase" placeholder="https://api.geeknow.ai/v1" value="https://api.geeknow.ai/v1">
   <div class="btn-row">
     <button class="btn-ghost" style="background:#10b981;color:#fff;border-color:#10b981" onclick="saveSettings()">保存</button>
     <button class="btn-ghost" onclick="toggleSettings()">取消</button>
   </div>
 </div>
 
-
-
-<div style="text-align:center;margin-top:8px">
-  <button class="btn-ghost" style="font-size:11px;padding:4px 12px" onclick="testAPIConnection()">🔌 测试 API 连接</button>
-  <span id="apiTestResult" style="font-size:11px;color:var(--text2);margin-left:8px"></span>
-</div>
-<script>
-async function testAPIConnection(){
-  var el=document.getElementById("apiTestResult");
-  el.textContent="测试中...";
-  el.style.color="var(--text2)";
-  try{
-    var r=await fetch("https://api.geeknow.ai/v1/images/generations",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry"},
-      body:JSON.stringify({model:"gpt-image-2",prompt:"a red apple","size":"1024x1024","n":1})
-    });
-    if(r.ok){var d=await r.json();el.textContent="API 连接正常 ✓";el.style.color="#10b981"}
-    else{el.textContent="API 错误: "+r.status;el.style.color="#ef4444"}
-  }catch(e){el.textContent="连接失败: "+e.message;el.style.color="#ef4444"}
-}
-</script>
 
 <!-- Tab Bar -->
 <div class="tab-bar" id="tabBar">
@@ -642,10 +620,10 @@ async function testAPIConnection(){
       <div class="icon icon-pink">✨</div>
       <div><h3>自定义偏好 & 生成提示词</h3><span>可选地描述你想要的风格、场景、氛围</span></div>
     </div>
-    <textarea class="custom-input" id="prefInput" aria-label="自定义偏好" title="自定义偏好描述" placeholder="例如：想要秋天黄昏的感觉，光线柔和温暖，不要太摆拍..."></textarea>
+    <textarea class="custom-input" id="prefInput" placeholder="例如：想要秋天黄昏的感觉，光线柔和温暖，不要太摆拍..."></textarea>
     <div class="btn-center" style="margin-top:16px">
       <label style="font-size:12px;color:var(--text2)">AI 模型</label>
-      <select class="model-select" id="promptModel" title="选择提示词模型"></select>
+      <select class="model-select" id="promptModel"></select>
       <button class="btn btn-primary" id="promptBtn" disabled>
         <span>✨</span> 生成提示词
       </button>
@@ -695,17 +673,17 @@ async function testAPIConnection(){
           <div><h3>生成图片</h3><span>可选上传参考图</span></div>
         </div>
         <div class="flex-row" style="justify-content:center;margin-bottom:12px">
-          <select class="model-select" id="sizeSelect" title="选择画幅比例">
+          <select class="model-select" id="sizeSelect">
             <option value="1792x1024">横版 16:9</option>
             <option value="1024x1024">方形 1:1</option>
             <option value="1024x1792">竖版 9:16</option>
           </select>
-          <select class="model-select" id="imageModel" title="选择生图模型"></select>
+          <select class="model-select" id="imageModel"></select>
           <button class="btn btn-secondary" id="imageBtn">🎨 生成图片</button>
         </div>
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('refUpload').click()">
           📷 点击上传参考图（可选）
-          <input type="file" id="refUpload" accept="image/*" style="display:none" aria-label="上传参考图" title="上传参考图" onchange="previewRef(this)">
+          <input type="file" id="refUpload" accept="image/*" style="display:none" onchange="previewRef(this)">
           <span id="refName" style="font-size:11px;color:var(--text2);display:block"></span>
         </div>
         <div style="text-align:center">
@@ -951,7 +929,6 @@ function showPrompt(d){
 
 // ── Image Generation ──
 $('imageBtn').addEventListener('click',async()=>{
-  console.log('[IMG] Starting image generation...');
   if(state.loading||!state.pendingPrompt){alert('请先生成提示词');return}
   state.loading=true;hideErr();showLoader('生成图片中...');updateLsStep(1,true);updateLsStep(2,true);updateLsStep(3);
   try{
@@ -964,9 +941,10 @@ $('imageBtn').addEventListener('click',async()=>{
     }else{
       body=JSON.stringify({model,prompt:($('enPrompt').value||(($('enPrompt').value||(curTab().prompt||{}).en))),size:$('sizeSelect').value,n:1});
     }
+    const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
     const imgUrl=getGWBase()+'/images/generations';
-    const headers={'Content-Type':'application/json','Authorization':'Bearer '+getGW()}
-    const res=await fetch(imgUrl,{method:'POST',headers,body}).catch(e=>{console.error('[IMG] Fetch error:',e);throw new Error('网络请求失败: '+(e.message||'请检查后端是否启动'))});
+    const headers={'Content-Type':'application/json','Authorization':'Bearer '+getGW()};
+    const res=await fetch(imgUrl,{method:'POST',headers,body}).catch(e=>{throw new Error('网络失败: '+(e.message||''))});
     if(!res.ok){const t=await res.text().catch(()=>'');let m;try{m=JSON.parse(t).error?.message||JSON.parse(t).error||t.slice(0,200)}catch{m=t.slice(0,200)}throw new Error(m||'HTTP '+res.status)}
     const d=await res.json();
     if(!d.data||!d.data[0].url)throw new Error('未返回图片URL');
@@ -1030,7 +1008,7 @@ function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 
 
 function regenerateImg(){
-  var d=state.pendingPrompt||(curTab().prompt);
+  const d=state.pendingPrompt;
   if(!d||!d.en)return;
   document.getElementById('imgFallback').style.display='none';
   document.getElementById('resultImg').style.display='block';

@@ -140,7 +140,7 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 .settings-fab:hover { border-color: var(--primary2); color: var(--primary2); }
 .settings-panel {
@@ -471,7 +471,7 @@ body {
   z-index: 100;
   display: none;
   align-items: center; justify-content: center;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .overlay.show { display: flex; }
 .loader-card {
@@ -556,15 +556,15 @@ body {
 
 
 <!-- Settings -->
-<button class="settings-fab" onclick="toggleSettings()" title="API 设置">⚙</button>
+<button class="settings-fab" onclick="toggleSettings()" title="API 设置"><span aria-label="设置">⚙</span></button>
 <button class="settings-fab history-fab" onclick="toggleHistory()" title="历史记录" style="top:72px">📜</button>
 <div class="settings-panel" id="settingsPanel">
   <label>DeepSeek API Key</label>
-  <input type="password" id="dsKey" placeholder="sk-...">
+  <input type="password" id="dsKey" aria-label="DeepSeek API Key" title="DeepSeek API Key" placeholder="sk-...">
   <label>代理 API Key (geeknow.ai)</label>
-  <input type="password" id="gwKey" placeholder="sk-...">
+  <input type="password" id="gwKey" aria-label="代理 API Key" title="代理 API Key" placeholder="sk-...">
   <label>代理地址</label>
-  <input type="text" id="gwBase" placeholder="https://api.geeknow.ai/v1" value="https://api.geeknow.ai/v1">
+  <input type="text" id="gwBase" aria-label="代理地址" title="代理地址" placeholder="https://api.geeknow.ai/v1" value="https://api.geeknow.ai/v1">
   <div class="btn-row">
     <button class="btn-ghost" style="background:#10b981;color:#fff;border-color:#10b981" onclick="saveSettings()">保存</button>
     <button class="btn-ghost" onclick="toggleSettings()">取消</button>
@@ -620,10 +620,10 @@ body {
       <div class="icon icon-pink">✨</div>
       <div><h3>自定义偏好 & 生成提示词</h3><span>可选地描述你想要的风格、场景、氛围</span></div>
     </div>
-    <textarea class="custom-input" id="prefInput" placeholder="例如：想要秋天黄昏的感觉，光线柔和温暖，不要太摆拍..."></textarea>
+    <textarea class="custom-input" id="prefInput" aria-label="自定义偏好" title="自定义偏好描述" placeholder="例如：想要秋天黄昏的感觉，光线柔和温暖，不要太摆拍..."></textarea>
     <div class="btn-center" style="margin-top:16px">
       <label style="font-size:12px;color:var(--text2)">AI 模型</label>
-      <select class="model-select" id="promptModel"></select>
+      <select class="model-select" id="promptModel" title="选择提示词模型"></select>
       <button class="btn btn-primary" id="promptBtn" disabled>
         <span>✨</span> 生成提示词
       </button>
@@ -673,17 +673,17 @@ body {
           <div><h3>生成图片</h3><span>可选上传参考图</span></div>
         </div>
         <div class="flex-row" style="justify-content:center;margin-bottom:12px">
-          <select class="model-select" id="sizeSelect">
+          <select class="model-select" id="sizeSelect" title="选择画幅比例">
             <option value="1792x1024">横版 16:9</option>
             <option value="1024x1024">方形 1:1</option>
             <option value="1024x1792">竖版 9:16</option>
           </select>
-          <select class="model-select" id="imageModel"></select>
+          <select class="model-select" id="imageModel" title="选择生图模型"></select>
           <button class="btn btn-secondary" id="imageBtn">🎨 生成图片</button>
         </div>
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('refUpload').click()">
           📷 点击上传参考图（可选）
-          <input type="file" id="refUpload" accept="image/*" style="display:none" onchange="previewRef(this)">
+          <input type="file" id="refUpload" accept="image/*" style="display:none" aria-label="上传参考图" title="上传参考图" onchange="previewRef(this)">
           <span id="refName" style="font-size:11px;color:var(--text2);display:block"></span>
         </div>
         <div style="text-align:center">

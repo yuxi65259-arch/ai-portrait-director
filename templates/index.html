@@ -810,8 +810,8 @@ const state={activeTab:0,loading:false};
 function tabs(){var t=LS('tabs');if(!t||!t.length){t=[newTab('对话 1')];LS('tabs',t)}return t}
 function curTab(){var t=tabs();return t[state.activeTab]||t[0]}
 function newTab(name){return{id:Date.now(),name:name||'对话 '+(tabs().length+1),category:null,subStyle:null,pref:'',pmodel:'deepseek-chat',imodel:'gemini-2.5-flash-image',isz:'1024x1024',prompt:null,imgUrl:null,loading:false}}
-function addTab(){var t=tabs();t.push(newTab());LS('tabs',t);state.activeTab=t.length-1;renderTabs();saveCurTab()}
-function switchTab(i){state.activeTab=i;renderTabs();saveCurTab();restoreTabUI()}
+function addTab(){var oldTab=curTab();if(oldTab){oldTab.pref=$('prefInput').value;oldTab.pmodel=$('promptModel').value;oldTab.imodel=$('imageModel').value;oldTab.isz=$('sizeSelect').value}var t=tabs();t.push(newTab());LS('tabs',t);state.activeTab=t.length-1;renderTabs();saveCurTab()}
+function switchTab(i){var oldTab=curTab();if(oldTab){oldTab.pref=$('prefInput').value;oldTab.pmodel=$('promptModel').value;oldTab.imodel=$('imageModel').value;oldTab.isz=$('sizeSelect').value}state.activeTab=i;renderTabs();saveCurTab();restoreTabUI()}
 function closeTab(i){var t=tabs();if(t.length<=1)return;t.splice(i,1);LS('tabs',t);if(state.activeTab>=t.length)state.activeTab=t.length-1;renderTabs();saveCurTab();restoreTabUI()}
 function saveCurTab(){LS('activetab',state.activeTab);var t=tabs();LS('tabs',t)}
 function renderTabs(){var el=$('tabBar');if(!el)return;var t=tabs();var h='';t.forEach(function(tb,i){h+='<div class="tab-item'+(i===state.activeTab?' active':'')+'" data-tab="'+i+'" onclick="switchTab('+i+')"><span class="tab-name">'+escapeHtml(tb.name)+'</span>'+(t.length>1?'<span class="tab-close" onclick="event.stopPropagation();closeTab('+i+')">×</span>':'')+'</div>'});h+='<button class="tab-add" onclick="addTab()">+</button>';el.innerHTML=h}

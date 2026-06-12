@@ -95,7 +95,7 @@ body{font-family:-apple-system,'Noto Sans SC',sans-serif;background:var(--bg);co
     </div>
     <div class="chat-area" id="chat"></div>
     <div class="input-area">
-      <div class="opt-row">
+      <div class="opt-row" style="gap:4px;flex-wrap:wrap"><span style="font-size:11px;color:var(--text2)">类别:</span><button class="cat-pill" onclick="setCat('个人写真',this)" style="padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;transition:.2s">个人写真</button><button class="cat-pill" onclick="setCat('婚纱写真',this)">婚纱写真</button><button class="cat-pill" onclick="setCat('旅拍写真',this)">旅拍写真</button><button class="cat-pill" onclick="setCat('创意写真',this)">创意写真</button><button class="cat-pill" onclick="setCat('COS写真',this)">COS写真</button></div><div class="opt-row">
         <span id="refBar"></span>
         <label for="refFiles">📷 参考图</label>
         <input type="file" id="refFiles" accept="image/*" multiple style="display:none" onchange="onRefPick(this)">
@@ -115,7 +115,7 @@ body{font-family:-apple-system,'Noto Sans SC',sans-serif;background:var(--bg);co
 var $=function(id){return document.getElementById(id)};
 var LS=function(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem('px_'+k));localStorage.setItem('px_'+k,JSON.stringify(v))}catch(e){return v===undefined?null:void 0}};
 var K={ds:'sk-0fe9505332be4b408cb9030a97d7a199',gw:'sk-p0HiwUiIGlLJjgAB1DhRNyg7K2OIfH4tcREwsQvk9XYVTdry',base:'https://api.geeknow.ai/v1'};
-var S={convs:[],activeId:null,loading:false,refFiles:[],refMsg:null};
+var S={convs:[],activeId:null,loading:false,refFiles:[],refMsg:null,selectedCat:null};function setCat(c,el){S.selectedCat=c;document.querySelectorAll('.cat-pill').forEach(function(x){x.style.background='transparent';x.style.color='var(--text2)';x.style.borderColor='var(--border)';x.style.fontWeight='normal'});el.style.background='rgba(124,58,237,.2)';el.style.borderColor='var(--primary)';el.style.color='var(--primary2)';el.style.fontWeight='600'}
 
 function newConv(){var c={id:'c'+Date.now(),title:'新建对话',ts:Date.now(),msgs:[]};S.convs.unshift(c);S.activeId=c.id;save();render()}
 function curConv(){return S.convs.find(function(x){return x.id===S.activeId})||S.convs[0]}
@@ -180,7 +180,7 @@ async function send(){
   S.loading=true;$('sendBtn').disabled=true;$('uin').value='';
   var cv=curConv();if(!cv){newConv();cv=curConv()}
   if(!cv.msgs.length)cv.title=txt.slice(0,30);
-  var uMsg={id:'m'+Date.now(),role:'user',content:txt,ts:Date.now()};cv.msgs.push(uMsg);save();render();
+  var uMsg={id:'m'+Date.now(),role:'user',content:(S.selectedCat?('【'+S.selectedCat+'】'):'')+txt,ts:Date.now()};cv.msgs.push(uMsg);save();render();
   $('chat').insertAdjacentHTML('beforeend','<div class="loading-row"><span class="spinner"></span>AI 正在创作...</div>');$('chat').scrollTop=$('chat').scrollHeight;
   try{
     var prev=null;for(var i=cv.msgs.length-2;i>=0;i--){if(cv.msgs[i].role==='assistant'&&cv.msgs[i].prompt){prev=cv.msgs[i];break}}

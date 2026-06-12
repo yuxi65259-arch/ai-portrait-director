@@ -722,6 +722,16 @@ function saveSettings(){
 })();
 loadCredits();
 }
+function creditKey(){return LS('user_key')||getGW()}
+async function loadCredits(){
+  const key=creditKey();const el=document.getElementById('creditBal');if(!key||!el)return;
+  try{
+    const r=await fetch('/api/auth/me',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key})});
+    if(!r.ok)return;
+    const d=await r.json();
+    el.textContent=d.credits||0;LS('user_key',d.api_key);
+  }catch(e){}
+}
 function toggleSettings(){
   $('settingsPanel').classList.toggle('show');
   if($('settingsPanel').classList.contains('show')){$('dsKey').value=getDS();$('gwKey').value=getGW();$('gwBase').value=getGWBase()}

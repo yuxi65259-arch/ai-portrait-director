@@ -806,13 +806,13 @@ else{initModels()}
 
 // ── State ──
 const state={activeTab:0,loading:false};
-function tabs(){var t=LS('tabs');if(!t||!t.length){t=[newTab('对话 1')];LS('tabs',t)}return t}
+var _tabsCache=null;function tabs(){if(!_tabsCache){_tabsCache=LS('tabs');if(!_tabsCache||!_tabsCache.length){_tabsCache=[newTab('对话 1')];LS('tabs',_tabsCache)}}return _tabsCache}
 function curTab(){var t=tabs();return t[state.activeTab]||t[0]}
 function newTab(name){return{id:Date.now(),name:name||'对话 '+(tabs().length+1),category:null,subStyle:null,pref:'',pmodel:'deepseek-chat',imodel:'gemini-2.5-flash-image',isz:'1024x1024',prompt:null,imgUrl:null,loading:false}}
 function addTab(){var oldTab=curTab();if(oldTab){oldTab.pref=$('prefInput').value;oldTab.pmodel=$('promptModel').value;oldTab.imodel=$('imageModel').value;oldTab.isz=$('sizeSelect').value}var t=tabs();t.push(newTab());LS('tabs',t);state.activeTab=t.length-1;renderTabs();saveCurTab()}
 function switchTab(i){var oldTab=curTab();if(oldTab){oldTab.pref=$('prefInput').value;oldTab.pmodel=$('promptModel').value;oldTab.imodel=$('imageModel').value;oldTab.isz=$('sizeSelect').value}state.activeTab=i;renderTabs();saveCurTab();restoreTabUI()}
 function closeTab(i){var t=tabs();if(t.length<=1)return;t.splice(i,1);LS('tabs',t);if(state.activeTab>=t.length)state.activeTab=t.length-1;renderTabs();saveCurTab();restoreTabUI()}
-function saveCurTab(){LS('activetab',state.activeTab);var t=tabs();LS('tabs',t)}
+function saveCurTab(){LS('activetab',state.activeTab);LS('tabs',_tabsCache||tabs())}
 function renderTabs(){var el=$('tabBar');if(!el)return;var t=tabs();var h='';t.forEach(function(tb,i){h+='<div class="tab-item'+(i===state.activeTab?' active':'')+'" data-tab="'+i+'" onclick="switchTab('+i+')"><span class="tab-name">'+escapeHtml(tb.name)+'</span>'+(t.length>1?'<span class="tab-close" onclick="event.stopPropagation();closeTab('+i+')">×</span>':'')+'</div>'});h+='<button class="tab-add" onclick="addTab()">+</button>';el.innerHTML=h}
 function restoreTabUI(){var tb=curTab();if(!tb)return;state.category=tb.category;if(tb.category){document.querySelectorAll('#catGrid .pill').forEach(function(x){x.classList.remove('active')});var b=document.querySelector('#catGrid .pill[data-cat="'+tb.category+'"]');if(b){b.classList.add('active');$('promptBtn').disabled=false}renderSubs(tb.category,tb.subStyle)}$('prefInput').value=tb.pref||'';if(tb.prompt){showPromptResult(tb.prompt);if(tb.imgUrl){$('resultImg').src=tb.imgUrl;$('imageResult').classList.add('show')}}else{$('promptResult').classList.remove('show');$('imageResult').classList.remove('show')}setTimeout(function(){$('promptModel').value=tb.pmodel;$('imageModel').value=tb.imodel;$('sizeSelect').value=tb.isz},200)}
 const subStyles={
